@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Dashboard - 185Service Booking</title>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    /* Admin specific styles */
+    .admin-container {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+    }
+    
+    .admin-header-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .filters-wrapper {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    .filter-select, .search-input {
+      padding: 10px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+      background: white;
+    }
+
+    .search-input {
+      min-width: 200px;
+    }
+
+    /* Admin Login Card */
+    .login-card {
+      max-width: 400px;
+      margin: 80px auto;
+      text-align: center;
+    }
+
+    /* Data Table styling */
+    .table-container {
+      overflow-x: auto;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      border: 1px solid #e2e8f0;
+      margin-bottom: 20px;
+    }
+
+    .booking-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.95rem;
+    }
+
+    .booking-table th, .booking-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .booking-table th {
+      background-color: #f8fafc;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .booking-table tr:hover {
+      background-color: #f8fafc;
+    }
+
+    /* Status badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 10px;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .badge-success {
+      background-color: #dcfce7;
+      color: #15803d;
+    }
+
+    .badge-danger {
+      background-color: #fee2e2;
+      color: #b91c1c;
+    }
+
+    .badge-warning {
+      background-color: #fef3c7;
+      color: #d97706;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 1000;
+      justify-content: center;
+      align-items: center;
+      backdrop-filter: blur(4px);
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: var(--border-radius);
+      padding: 32px;
+      width: 100%;
+      max-width: 600px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: var(--shadow);
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .modal-header h3 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--primary-color);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: var(--text-light);
+    }
+
+    .close-btn:hover {
+      color: var(--primary-color);
+    }
+
+    .action-btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-icon {
+      padding: 8px;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      border: none;
+      color: white;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn-edit { background-color: var(--accent-color); }
+    .btn-edit:hover { background-color: var(--accent-hover); }
+    .btn-cancel { background-color: #ef4444; }
+    .btn-cancel:hover { background-color: #dc2626; }
+    
+    .nav-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 20px;
+    }
+    
+    .tab-link {
+      padding: 8px 16px;
+      background: #f1f5f9;
+      border-radius: 8px;
+      color: var(--text-dark);
+      text-decoration: none;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+    
+    .tab-link.active {
+      background: var(--accent-color);
+      color: white;
+    }
+  </style>
+</head>
+<body>
+  <div class="background-decor">
+    <div class="glow-circle primary-glow"></div>
+    <div class="glow-circle secondary-glow"></div>
+  </div>
+
+  <div class="admin-container" id="adminContainer">
+    <!-- Login Screen -->
+    <div class="booking-card login-card" id="loginScreen">
+      <header class="app-header" style="color: var(--primary-color);">
+        <div class="logo-container">
+          <i class="fa-solid fa-lock logo-icon" style="color: var(--accent-color)"></i>
+          <h1 style="color: var(--primary-color);">Admin <span>Login</span></h1>
+        </div>
+        <p class="subtitle" style="color: var(--text-light);">กรุณากรอกรหัสผ่านเพื่อเข้าสู่แผงควบคุม</p>
+      </header>
+      
+      <form id="loginForm" onsubmit="handleLogin(event)">
+        <div class="form-group">
+          <input type="password" id="adminPin" placeholder="กรอกรหัสผ่านแอดมิน..." required style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">
+          เข้าสู่ระบบ <i class="fa-solid fa-right-to-bracket"></i>
+        </button>
+      </form>
+    </div>
+
+    <!-- Dashboard Screen (Hidden initially) -->
+    <div class="hidden" id="dashboardScreen">
+      <header class="app-header" style="text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
+        <div>
+          <div class="logo-container" style="justify-content: flex-start;">
+            <i class="fa-solid fa-circle-user logo-icon"></i>
+            <h1>Admin <span>Dashboard</span></h1>
+          </div>
+          <p class="subtitle">ระบบจัดการคิวบริการหลังบ้าน 185Service</p>
+        </div>
+        <div class="action-btn-group">
+          <a href="index.html" class="tab-link"><i class="fa-solid fa-globe"></i> หน้าหลักจองคิว</a>
+          <button class="btn btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> เพิ่มคิวด้วยตนเอง</button>
+          <button class="btn btn-secondary" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+        </div>
+      </header>
+
+      <div class="booking-card" style="padding: 24px; margin-top: 24px;">
+        <div class="admin-header-actions">
+          <div class="filters-wrapper">
+            <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, เบอร์โทร, ทะเบียนรถ..." class="search-input" oninput="filterBookings()">
+            
+            <select id="branchFilter" class="filter-select" onchange="filterBookings()">
+              <option value="">ทุกสาขา</option>
+              <option value="สาย 3">สาขาสาย 3</option>
+              <option value="บางแค">สาขาบางแค</option>
+              <option value="นนทบุรี">สาขานนทบุรี</option>
+              <option value="หนองแขม">สาขาหนองแขม</option>
+            </select>
+
+            <select id="statusFilter" class="filter-select" onchange="filterBookings()">
+              <option value="">ทุกสถานะ</option>
+              <option value="ปกติ">ปกติ (ใช้งาน)</option>
+              <option value="ยกเลิก">ยกเลิก</option>
+            </select>
+          </div>
+          <button class="btn btn-secondary" onclick="loadBookings()"><i class="fa-solid fa-rotate"></i> รีเฟรชข้อมูล</button>
+        </div>
+
+        <div class="table-container">
+          <table class="booking-table">
+            <thead>
+              <tr>
+                <th>วันที่/เวลานัด</th>
+                <th>สาขา</th>
+                <th>ข้อมูลลูกค้า</th>
+                <th>ข้อมูลรถยนต์</th>
+                <th>รายละเอียดบริการ</th>
+                <th>สถานะ</th>
+                <th>จัดการ</th>
+              </tr>
+            </thead>
+            <tbody id="bookingsTableBody">
+              <!-- Bookings data injected here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit/Add Modal -->
+  <div class="modal" id="bookingModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalTitle">แก้ไขข้อมูลการจอง</h3>
+        <button class="close-btn" onclick="closeModal()">&times;</button>
+      </div>
+      <form id="modalForm" onsubmit="saveBooking(event)">
+        <input type="hidden" id="modalBookingId">
+        
+        <div class="form-group">
+          <label for="modalBranch">สาขาที่เข้ารับบริการ</label>
+          <select id="modalBranch" required class="filter-select" style="width: 100%; height: 48px;">
+            <option value="สาย 3">สาขาสาย 3</option>
+            <option value="บางแค">สาขาบางแค</option>
+            <option value="นนทบุรี">สาขานนทบุรี</option>
+            <option value="หนองแขม">สาขาหนองแขม</option>
+          </select>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="modalDate">วันที่นัดหมาย</label>
+            <input type="date" id="modalDate" required>
+          </div>
+          <div class="form-group">
+            <label for="modalTime">เวลานัดหมาย (08:30-14:00)</label>
+            <select id="modalTime" required class="filter-select" style="width: 100%; height: 48px;">
+              <option value="08:30">08:30 น.</option>
+              <option value="09:30">09:30 น.</option>
+              <option value="10:30">10:30 น.</option>
+              <option value="11:30">11:30 น.</option>
+              <option value="12:30">12:30 น.</option>
+              <option value="13:30">13:30 น.</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="modalCustomerName">ชื่อลูกค้า</label>
+            <input type="text" id="modalCustomerName" required>
+          </div>
+          <div class="form-group">
+            <label for="modalCustomerPhone">เบอร์โทรศัพท์</label>
+            <input type="text" id="modalCustomerPhone" required>
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="form-group">
+            <label for="modalCarLicense">ทะเบียนรถ</label>
+            <input type="text" id="modalCarLicense" required>
+          </div>
+          <div class="form-group">
+            <label for="modalCarModel">ยี่ห้อ / รุ่นรถ</label>
+            <input type="text" id="modalCarModel" required>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="modalServiceDetails">รายละเอียดบริการ</label>
+          <textarea id="modalServiceDetails" rows="3"></textarea>
+        </div>
+
+        <div class="form-group" id="statusGroup">
+          <label for="modalStatus">สถานะคิว</label>
+          <select id="modalStatus" class="filter-select" style="width: 100%; height: 48px;">
+            <option value="ปกติ">ปกติ (ใช้งาน)</option>
+            <option value="ยกเลิก">ยกเลิกคิว (ลบออกจากปฏิทิน)</option>
+          </select>
+        </div>
+
+        <div class="form-navigation" style="margin-top: 24px;">
+          <button type="button" class="btn btn-secondary" onclick="closeModal()">ยกเลิก</button>
+          <button type="submit" class="btn btn-primary" id="btnModalSave">บันทึกข้อมูล</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
