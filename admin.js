@@ -242,6 +242,128 @@ async function saveBooking(event) {
 // แปลงรูปแบบวันที่ไทย
 function formatThaiDate(dateString) {
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
-  const date = new Date(dateString);
+  const date = new Date(dateString + 'T00:00:00');
   return date.toLocaleDateString('th-TH', options);
+}
+
+// ─── Calendar View ─────────────────────────────────────
+let calendarInstance = null;
+let calendarInitialized = false;
+
+// สลับมุมมองระหว่าง List และ Calendar
+function switchView(view) {
+  const listContainer = document.getElementById('listViewContainer');
+  const calContainer = document.getElementById('calendarViewContainer');
+  const listToolbar = document.getElementById('listToolbar');
+  const btnList = document.getElementById('btnTabList');
+  const btnCal = document.getElementById('btnTabCalendar');
+
+  if (view === 'list') {
+    listContainer.classList.remove('hidden');
+    calContainer.classList.add('hidden');
+    listToolbar.classList.remove('hidden');
+    btnList.classList.add('active');
+    btnCal.classList.remove('active');
+  } else {
+    listContainer.classList.add('hidden');
+    calContainer.classList.remove('hidden');
+    listToolbar.classList.add('hidden');
+    btnList.classList.remove('active');
+    btnCal.classList.add('active');
+
+    // สร้างปฏิทินครั้งแรกเมื่อสลับมุมมอง
+    if (!calendarInitialized) {
+      initCalendar();
+    } else {
+      // อัปเดตกิจกรรมในปฏิทินจากข้อมูลล่าสุด
+      updateCalendarEvents();
+    }
+  }
+}
+
+// กำหนดสีตามสาขา
+function getBranchColor(branch) {
+  const colors = {
+    'สาย 3':    { background: '#1a73e8', border: '#1558b0' },
+    'บางแค':   { background: '#e67c00', border: '#bf6600' },
+    'นนทบุรี': { background: '#0f9d58', border: '#0b7d46' },
+    'หนองแขม': { background: '#7b1fa2', border: '#5c1579' },
+  };
+  return colors[branch] || { background: '#e11d29', border: '#b91c25' };
+}
+
+// แปลงข้อมูล bookings เป็น FullCalendar events
+function bookingsToEvents(data) {
+  return data
+    .filter(item => !item.status.includes('ยกเลิก'))
+    .map(item => {
+      const color = getBranchColor(item.branch);
+      const dateTime = item.date + 'T' + (item.time.length === 5 ? item.time : item.time.substring(0, 5)) + ':00';
+      // คำนวณเวลาสิ้นสุด +1 ชั่วโมง
+      const start = new Date(dateTime);
+      const end = new Date(start.getTime() + 60 * 60 * 1000);
+
+      return {
+        id: item.bookingId,
+        title: `${item.time} | ${item.branch} | ${item.customerName}`,
+        start: start.toISOString(),
+        end: end.toISOString(),
+        backgroundColor: color.background,
+        borderColor: color.border,
+        textColor: '#ffffff',
+        extendedProps: { booking: item }
+      };
+    });
+}
+
+// สร้างปฏิทิน FullCalendar
+function initCalendar() {
+  const calendarEl = document.getElementById('calendar');
+  const events = bookingsToEvents(bookingsList);
+
+  calendarInstance = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'dayGridMonth',
+    locale: 'th',
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,timeGridWeek,timeGridDay,listWeek'
+    },
+    buttonText: {
+      today: 'วันนี้',
+      month: 'เดือน',
+      week: 'สัปดาห์',
+      day: 'วัน',
+      list: 'รายการ'
+    },
+    events: events,
+    eventClick: function(info) {
+      const booking = info.event.extendedProps.booking;
+      // เปิดหน้าต่างแก้ไขโดยตรงเมื่อคลิก Event ในปฏิทิน
+      openEditModal(booking.bookingId);
+    },
+    eventDidMount: function(info) {
+      // แสดง Tooltip เมื่อชี้เมาส์
+      const booking = info.event.extendedProps.booking;
+      info.el.title = 
+        `สาขา: ${booking.branch}\n` +
+        `ลูกค้า: ${booking.customerName}\n` +
+        `โทร: ${booking.customerPhone}\n` +
+        `รถ: ${booking.carModel} (${booking.carLicense})\n` +
+        `บริการ: ${booking.serviceDetails || '-'}`;
+    },
+    height: 'auto',
+  });
+
+  calendarInstance.render();
+  calendarInitialized = true;
+}
+
+// อัปเดต events ในปฏิทินเมื่อข้อมูลเปลี่ยน
+function updateCalendarEvents() {
+  if (!calendarInstance) return;
+  // ลบ events เก่าทั้งหมดออกก่อน
+  calendarInstance.removeAllEvents();
+  // เพิ่ม events ใหม่ทั้งหมดจากข้อมูลล่าสุด
+  bookingsToEvents(bookingsList).forEach(ev => calendarInstance.addEvent(ev));
 }

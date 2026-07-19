@@ -56,10 +56,10 @@
     /* Data Table styling */
     .table-container {
       overflow-x: auto;
-      background: white;
+      background: var(--black-surface);
       border-radius: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-      border: 1px solid #e2e8f0;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--black-border);
       margin-bottom: 20px;
     }
 
@@ -68,21 +68,22 @@
       border-collapse: collapse;
       text-align: left;
       font-size: 0.95rem;
+      color: var(--white);
     }
 
     .booking-table th, .booking-table td {
       padding: 16px 20px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--black-border);
     }
 
     .booking-table th {
-      background-color: #f8fafc;
+      background-color: var(--black-card);
       font-weight: 600;
-      color: var(--primary-color);
+      color: var(--gray);
     }
 
     .booking-table tr:hover {
-      background-color: #f8fafc;
+      background-color: #2a2a2a;
     }
 
     /* Status badges */
@@ -96,18 +97,21 @@
     }
 
     .badge-success {
-      background-color: #dcfce7;
-      color: #15803d;
+      background-color: rgba(21, 128, 61, 0.2);
+      color: #4ade80;
+      border: 1px solid #15803d;
     }
 
     .badge-danger {
-      background-color: #fee2e2;
-      color: #b91c1c;
+      background-color: rgba(185, 28, 28, 0.2);
+      color: #f87171;
+      border: 1px solid #b91c1c;
     }
 
     .badge-warning {
-      background-color: #fef3c7;
-      color: #d97706;
+      background-color: rgba(217, 119, 6, 0.2);
+      color: #fbbf24;
+      border: 1px solid #d97706;
     }
 
     /* Modal styles */
@@ -118,7 +122,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(15, 23, 42, 0.6);
+      background: rgba(10, 10, 10, 0.8);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -130,8 +134,9 @@
     }
 
     .modal-content {
-      background: white;
-      border-radius: var(--border-radius);
+      background: var(--black-card);
+      border: 1px solid var(--black-border);
+      border-radius: var(--radius);
       padding: 32px;
       width: 100%;
       max-width: 600px;
@@ -139,6 +144,7 @@
       overflow-y: auto;
       box-shadow: var(--shadow);
       animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      color: var(--white);
     }
 
     .modal-header {
@@ -146,14 +152,14 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 24px;
-      border-bottom: 1px solid #e2e8f0;
+      border-bottom: 1px solid var(--black-border);
       padding-bottom: 12px;
     }
 
     .modal-header h3 {
       font-size: 1.3rem;
       font-weight: 600;
-      color: var(--primary-color);
+      color: var(--white);
     }
 
     .close-btn {
@@ -161,11 +167,11 @@
       border: none;
       font-size: 1.5rem;
       cursor: pointer;
-      color: var(--text-light);
+      color: var(--gray);
     }
 
     .close-btn:hover {
-      color: var(--primary-color);
+      color: var(--red);
     }
 
     .action-btn-group {
@@ -185,10 +191,8 @@
       justify-content: center;
     }
 
-    .btn-edit { background-color: var(--accent-color); }
-    .btn-edit:hover { background-color: var(--accent-hover); }
-    .btn-cancel { background-color: #ef4444; }
-    .btn-cancel:hover { background-color: #dc2626; }
+    .btn-edit { background-color: var(--red); }
+    .btn-edit:hover { background-color: var(--red-dark); }
     
     .nav-tabs {
       display: flex;
@@ -197,20 +201,45 @@
     }
     
     .tab-link {
-      padding: 8px 16px;
-      background: #f1f5f9;
+      padding: 10px 20px;
+      background: var(--black-surface);
+      border: 1px solid var(--black-border);
       border-radius: 8px;
-      color: var(--text-dark);
+      color: var(--white);
       text-decoration: none;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .tab-link:hover {
+      background: var(--black-border);
     }
     
     .tab-link.active {
-      background: var(--accent-color);
+      background: var(--red);
+      border-color: var(--red);
       color: white;
     }
+    
+    /* FullCalendar custom styling */
+    .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid {
+      border-color: #e2e8f0;
+    }
+    .fc .fc-button-primary {
+      background-color: var(--red) !important;
+      border-color: var(--red) !important;
+    }
+    .fc .fc-button-primary:not(:disabled).fc-button-active, .fc .fc-button-primary:not(:disabled):active {
+      background-color: var(--red-dark) !important;
+      border-color: var(--red-dark) !important;
+    }
+    .fc-event {
+      cursor: pointer;
+    }
   </style>
+  <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
 </head>
 <body>
   <div class="background-decor">
@@ -221,17 +250,17 @@
   <div class="admin-container" id="adminContainer">
     <!-- Login Screen -->
     <div class="booking-card login-card" id="loginScreen">
-      <header class="app-header" style="color: var(--primary-color);">
+      <header class="app-header">
         <div class="logo-container">
-          <i class="fa-solid fa-lock logo-icon" style="color: var(--accent-color)"></i>
-          <h1 style="color: var(--primary-color);">Admin <span>Login</span></h1>
+          <i class="fa-solid fa-lock logo-icon"></i>
+          <h1>Admin <span>Login</span></h1>
         </div>
-        <p class="subtitle" style="color: var(--text-light);">กรุณากรอกรหัสผ่านเพื่อเข้าสู่แผงควบคุม</p>
+        <p class="subtitle">กรุณากรอกรหัสผ่านเพื่อเข้าสู่แผงควบคุม</p>
       </header>
       
-      <form id="loginForm" onsubmit="handleLogin(event)">
+      <form id="loginForm" onsubmit="handleLogin(event)" style="padding-top: 20px;">
         <div class="form-group">
-          <input type="password" id="adminPin" placeholder="กรอกรหัสผ่านแอดมิน..." required style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
+          <input type="password" id="adminPin" placeholder="กรอกรหัสผ่าน..." required style="text-align: center; font-size: 1.2rem; letter-spacing: 4px;">
         </div>
         <button type="submit" class="btn btn-primary" style="width: 100%;">
           เข้าสู่ระบบ <i class="fa-solid fa-right-to-bracket"></i>
@@ -241,7 +270,7 @@
 
     <!-- Dashboard Screen (Hidden initially) -->
     <div class="hidden" id="dashboardScreen">
-      <header class="app-header" style="text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 20px;">
+      <header class="app-header" style="text-align: left; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; border-bottom: 2px solid rgba(255,255,255,0.1); padding-bottom: 20px; background: transparent;">
         <div>
           <div class="logo-container" style="justify-content: flex-start;">
             <i class="fa-solid fa-circle-user logo-icon"></i>
@@ -250,14 +279,21 @@
           <p class="subtitle">ระบบจัดการคิวบริการหลังบ้าน 185Service</p>
         </div>
         <div class="action-btn-group">
-          <a href="index.html" class="tab-link"><i class="fa-solid fa-globe"></i> หน้าหลักจองคิว</a>
-          <button class="btn btn-primary" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> เพิ่มคิวด้วยตนเอง</button>
-          <button class="btn btn-secondary" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
+          <a href="index.html" class="btn btn-secondary" style="padding: 10px 16px; min-height: unset;"><i class="fa-solid fa-globe"></i> หน้าแรก</a>
+          <button class="btn btn-primary" style="padding: 10px 16px; min-height: unset;" onclick="openAddModal()"><i class="fa-solid fa-plus"></i> เพิ่มคิว</button>
+          <button class="btn btn-secondary" style="padding: 10px 16px; min-height: unset;" onclick="handleLogout()"><i class="fa-solid fa-right-from-bracket"></i> ออกจากระบบ</button>
         </div>
       </header>
 
-      <div class="booking-card" style="padding: 24px; margin-top: 24px;">
-        <div class="admin-header-actions">
+      <div class="booking-card" style="padding: 24px; margin-top: 24px; border-top: 1px solid var(--black-border); border-radius: var(--radius);">
+        
+        <div class="nav-tabs">
+          <button class="tab-link active" id="btnTabList" onclick="switchView('list')"><i class="fa-solid fa-list"></i> ตารางคิว</button>
+          <button class="tab-link" id="btnTabCalendar" onclick="switchView('calendar')"><i class="fa-solid fa-calendar-days"></i> ปฏิทินแบบเต็ม</button>
+        </div>
+
+        <!-- Toolbar controls -->
+        <div class="admin-header-actions" id="listToolbar">
           <div class="filters-wrapper">
             <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, เบอร์โทร, ทะเบียนรถ..." class="search-input" oninput="filterBookings()">
             
@@ -275,10 +311,11 @@
               <option value="ยกเลิก">ยกเลิก</option>
             </select>
           </div>
-          <button class="btn btn-secondary" onclick="loadBookings()"><i class="fa-solid fa-rotate"></i> รีเฟรชข้อมูล</button>
+          <button class="btn btn-secondary" style="padding: 10px 16px; min-height: unset;" onclick="loadBookings()"><i class="fa-solid fa-rotate"></i> รีเฟรช</button>
         </div>
 
-        <div class="table-container">
+        <!-- List View -->
+        <div class="table-container" id="listViewContainer">
           <table class="booking-table">
             <thead>
               <tr>
@@ -296,6 +333,12 @@
             </tbody>
           </table>
         </div>
+
+        <!-- Calendar View -->
+        <div id="calendarViewContainer" class="hidden" style="background: white; border-radius: 12px; padding: 20px; color: black; min-height: 600px;">
+          <div id="calendar"></div>
+        </div>
+
       </div>
     </div>
   </div>
