@@ -3,8 +3,8 @@
 // ⚠️ ให้ผู้ใช้ก๊อปปี้ URL ของ Google Apps Script Web App ที่ Deploy เสร็จแล้วมาใส่ที่นี่
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzXkq_P31Exsqp4LCCLRwiRb2gPZgIG-g4aFlxgx_mGm_JHHCvzRfV06-up810e0APw/exec"; 
 
-// กำหนดช่วงเวลาจอง (ทุกๆ 1 ชั่วโมง ตั้งแต่ 08:30 - 13:30)
-const TIME_SLOTS = ["08:30", "09:30", "10:30", "11:30", "12:30", "13:30"];
+// กำหนดช่วงเวลาจอง (ทุกๆ 1 ชั่วโมง ตั้งแต่ 08:30 - 14:00)
+const TIME_SLOTS = ["08:30", "09:00", "09:30", "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30", "14:00"];
 
 let selectedDateStr = "";
 let selectedTimeStr = "";
@@ -60,7 +60,7 @@ async function checkAvailableSlots() {
     console.warn("ยังไม่ได้ตั้งค่า GAS_API_URL - จำลองข้อมูลตัวอย่างคิวว่าง");
     setTimeout(() => {
       // จำลองข้อมูลคิวว่างกรณีที่ยังไม่ได้เอา URL GAS มาใส่
-      const mockQueues = { "08:30": 2, "09:30": 0, "10:30": 1, "11:30": 3, "12:30": 0, "13:30": 1 };
+      const mockQueues = { "08:30": 2, "09:00": 0, "09:30": 0, "10:00": 1, "10:30": 1, "11:00": 0, "11:30": 3, "12:00": 0, "12:30": 0, "13:00": 0, "13:30": 1, "14:00": 0 };
       renderTimeSlots(mockQueues);
     }, 800);
     return;
