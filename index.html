@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#0a0a0a">
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Sarabun:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- Flatpickr removed for custom date roller -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
@@ -21,7 +21,7 @@
     <!-- Header -->
     <header class="app-header">
       <div class="logo-container">
-        <i class="fa-solid fa-car-side logo-icon"></i>
+        <img src="logo.png" alt="185Service Logo" class="brand-logo">
         <h1>185<span>Service</span></h1>
       </div>
       <p class="subtitle">จองคิวเข้ารับบริการรถยนต์ได้ที่นี่</p>
@@ -102,8 +102,11 @@
           </div>
 
           <p class="section-title mt-4"><i class="fa-regular fa-calendar-days"></i> เลือกวันที่</p>
-          <div class="date-picker-container">
-            <input type="text" id="bookingDate" name="bookingDate" placeholder="แตะเพื่อเลือกวันที่..." required>
+          <div class="date-roller-container">
+            <div class="date-roller" id="dateRoller">
+              <!-- JS will inject date cards here -->
+            </div>
+            <input type="hidden" id="bookingDate" name="bookingDate" required>
           </div>
 
           <p class="section-title mt-4"><i class="fa-regular fa-clock"></i> เลือกเวลา (เปิดบริการ 08:30 – 14:00 น.)</p>
@@ -127,33 +130,37 @@
 
         <!-- ═══ STEP 2 ═══ -->
         <section class="form-step" id="step2">
-          <p class="section-title"><i class="fa-regular fa-address-card"></i> ข้อมูลผู้ติดต่อ</p>
+          <div class="inner-card">
+            <p class="section-title"><i class="fa-regular fa-address-card"></i> ข้อมูลผู้ติดต่อ</p>
 
-          <div class="form-group">
-            <label for="customerName"><i class="fa-solid fa-user"></i> ชื่อผู้ติดต่อ <span class="required">*</span></label>
-            <input type="text" id="customerName" name="customerName" required placeholder="เช่น คุณสมชาย ใจดี">
+            <div class="form-group">
+              <label for="customerName"><i class="fa-solid fa-user"></i> ชื่อผู้ติดต่อ <span class="required">*</span></label>
+              <input type="text" id="customerName" name="customerName" required placeholder="เช่น คุณสมชาย ใจดี">
+            </div>
+
+            <div class="form-group">
+              <label for="customerPhone"><i class="fa-solid fa-phone"></i> เบอร์โทรศัพท์ <span class="required">*</span></label>
+              <input type="tel" id="customerPhone" name="customerPhone" required placeholder="เช่น 0891234567" inputmode="numeric" pattern="[0-9]{9,10}">
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="customerPhone"><i class="fa-solid fa-phone"></i> เบอร์โทรศัพท์ <span class="required">*</span></label>
-            <input type="tel" id="customerPhone" name="customerPhone" required placeholder="เช่น 0891234567" inputmode="numeric" pattern="[0-9]{9,10}">
-          </div>
+          <div class="inner-card mt-4">
+            <p class="section-title"><i class="fa-solid fa-car"></i> ข้อมูลรถยนต์</p>
 
-          <p class="section-title mt-4"><i class="fa-solid fa-car"></i> ข้อมูลรถยนต์</p>
+            <div class="form-group">
+              <label for="carLicense"><i class="fa-solid fa-id-card"></i> ทะเบียนรถ <span class="required">*</span></label>
+              <input type="text" id="carLicense" name="carLicense" required placeholder="เช่น กข 1234 กรุงเทพฯ" autocomplete="off">
+            </div>
 
-          <div class="form-group">
-            <label for="carLicense"><i class="fa-solid fa-id-card"></i> ทะเบียนรถ <span class="required">*</span></label>
-            <input type="text" id="carLicense" name="carLicense" required placeholder="เช่น กข 1234 กรุงเทพฯ" autocomplete="off">
-          </div>
+            <div class="form-group">
+              <label for="carModel"><i class="fa-solid fa-car-side"></i> ยี่ห้อ / รุ่นรถ <span class="required">*</span></label>
+              <input type="text" id="carModel" name="carModel" required placeholder="เช่น Toyota Camry ปี 2022">
+            </div>
 
-          <div class="form-group">
-            <label for="carModel"><i class="fa-solid fa-car-side"></i> ยี่ห้อ / รุ่นรถ <span class="required">*</span></label>
-            <input type="text" id="carModel" name="carModel" required placeholder="เช่น Toyota Camry ปี 2022">
-          </div>
-
-          <div class="form-group">
-            <label for="serviceDetails"><i class="fa-solid fa-wrench"></i> รายละเอียดบริการ / อาการที่ต้องการแจ้ง</label>
-            <textarea id="serviceDetails" name="serviceDetails" rows="3" placeholder="ระบุบริการที่ต้องการ หรืออาการชำรุด เช่น เช็คระยะ เปลี่ยนน้ำมัน แอร์ไม่เย็น"></textarea>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label for="serviceDetails"><i class="fa-solid fa-wrench"></i> รายละเอียดบริการ / อาการที่ต้องการแจ้ง</label>
+              <textarea id="serviceDetails" name="serviceDetails" rows="3" placeholder="ระบุบริการที่ต้องการ หรืออาการชำรุด เช่น เช็คระยะ เปลี่ยนน้ำมัน แอร์ไม่เย็น"></textarea>
+            </div>
           </div>
 
           <div class="form-navigation">
@@ -209,8 +216,7 @@
     </footer>
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/th.js"></script>
+  <!-- Flatpickr removed -->
   <script src="app.js"></script>
 </body>
 </html>

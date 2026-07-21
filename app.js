@@ -12,24 +12,8 @@ let selectedBranchStr = "สาย 3";
 
 // โหลดระบบหลังจากเอกสารโหลดเสร็จ
 document.addEventListener("DOMContentLoaded", () => {
-  // เริ่มต้น Flatpickr ปฏิทินภาษาไทย
-  flatpickr("#bookingDate", {
-    locale: "th",
-    dateFormat: "Y-m-d",
-    minDate: "today", // ห้ามจองย้อนหลัง
-    disable: [
-      function(date) {
-        // สามารถปิดวันอาทิตย์ได้ที่นี่ถ้าต้องการ (0 คือวันอาทิตย์)
-        // return (date.getDay() === 0);
-        return false;
-      }
-    ],
-    onChange: function(selectedDates, dateStr) {
-      selectedDateStr = dateStr;
-      document.getElementById("selectDateWarning").classList.add("hidden");
-      checkAvailableSlots();
-    }
-  });
+  // สร้างวันที่ล่วงหน้าแบบเลื่อนแนวนอน
+  generateDateRoller();
 
   // ผูก Event Listener ให้กับปุ่มเปลี่ยนสาขา
   const branchRadios = document.querySelectorAll('input[name="branch"]');
@@ -42,6 +26,61 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 });
+
+// ฟังก์ชันสร้างแถบเลือกวันที่แบบเลื่อน (Rolling Dates)
+function generateDateRoller() {
+  const roller = document.getElementById('dateRoller');
+  if (!roller) return;
+  roller.innerHTML = '';
+  
+  const today = new Date();
+  const dayNames = ['อา.', 'จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.'];
+  const monthNames = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+  
+  // สร้างวันล่วงหน้า 30 วัน
+  for (let i = 0; i < 30; i++) {
+    const d = new Date();
+    d.setDate(today.getDate() + i);
+    
+    // ข้ามวันอาทิตย์ถ้าต้องการ (ปัจจุบันไม่ได้ข้าม)
+    
+    // YYYY-MM-DD (แก้ไขเรื่อง Timezone offset)
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, '0');
+    const day = String(d.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    
+    const dayName = dayNames[d.getDay()];
+    const dateNum = d.getDate();
+    const monthName = monthNames[d.getMonth()];
+    
+    const card = document.createElement('div');
+    card.className = 'date-card';
+    if (i === 0) card.classList.add('today');
+    
+    card.innerHTML = `
+      <div class="date-day">${i === 0 ? 'วันนี้' : dayName}</div>
+      <div class="date-num">${dateNum}</div>
+      <div class="date-month">${monthName}</div>
+    `;
+    
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.date-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      
+      selectedDateStr = dateStr;
+      document.getElementById("bookingDate").value = dateStr;
+      
+      const warning = document.getElementById("selectDateWarning");
+      if (warning) warning.classList.add("hidden");
+      
+      checkAvailableSlots();
+    });
+    
+    roller.appendChild(card);
+  }
+}
+
 
 // ฟังก์ชันดึงจำนวนคิวจองจาก Google Sheets ผ่าน GAS Web App
 async function checkAvailableSlots() {
