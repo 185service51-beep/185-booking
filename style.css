@@ -767,3 +767,70 @@ input, textarea, button, select {
 .animate-pop {
   animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
+
+/* ─── Booking Note ──────────────────────── */
+.booking-note {
+  background: rgba(225, 29, 41, 0.05);
+  border: 1px solid rgba(225, 29, 41, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin: 24px 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+}
+
+.booking-note .note-title {
+  color: #ff4a5a;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.9rem;
+}
+
+.booking-note ul {
+  margin: 0;
+  padding-left: 18px;
+  color: var(--white-dim);
+}
+
+.booking-note li {
+  margin-bottom: 6px;
+}
+
+.booking-note li:last-child {
+  margin-bottom: 0;
+}
+
+/* ─── Symptom Tags ──────────────────────── */
+.symptom-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.tag-btn {
+  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--glass-border);
+  color: var(--white-dim);
+  padding: 6px 14px;
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: all var(--transition);
+  user-select: none;
+  font-weight: 400;
+}
+
+.tag-btn:hover {
+  background: var(--glass-bg-hover);
+  border-color: var(--red);
+  color: var(--white);
+}
+
+.tag-btn:active {
+  transform: scale(0.95);
+}

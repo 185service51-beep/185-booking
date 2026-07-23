@@ -121,7 +121,15 @@
           </div>
           <div class="time-grid hidden" id="timeGrid"></div>
 
-          <div class="form-navigation">
+          <div class="booking-note">
+            <p class="note-title"><i class="fa-solid fa-circle-info"></i> ข้อกำหนดการเข้ารับบริการ</p>
+            <ul>
+              <li>เพื่อความรวดเร็ว ลูกค้าสามารถนำรถเข้ามาล่วงหน้าได้ <strong>30 นาที</strong></li>
+              <li>หากมาหลังเวลานัดหมาย ทางร้านขอสงวนสิทธิ์ให้กับคิวถัดไป หรือลูกค้า Walk-in หน้าร้านก่อนเพื่อความลื่นไหลของคิว</li>
+            </ul>
+          </div>
+
+          <div class="form-navigation mt-4">
             <button type="button" class="btn btn-primary btn-next" onclick="goToStep(2)" disabled id="btnNextStep1">
               ถัดไป <i class="fa-solid fa-arrow-right"></i>
             </button>
@@ -160,7 +168,23 @@
             <div class="form-group" style="margin-bottom: 0;">
               <label for="serviceDetails"><i class="fa-solid fa-wrench"></i> รายละเอียดบริการ / อาการที่ต้องการแจ้ง</label>
               <textarea id="serviceDetails" name="serviceDetails" rows="3" placeholder="ระบุบริการที่ต้องการ หรืออาการชำรุด เช่น เช็คระยะ เปลี่ยนน้ำมัน แอร์ไม่เย็น"></textarea>
+              <div class="symptom-tags">
+                <span class="tag-btn" onclick="addSymptom('เช็คแอร์')">เช็คแอร์</span>
+                <span class="tag-btn" onclick="addSymptom('แอร์ไม่เย็นมีแต่ลมร้อน')">แอร์ไม่เย็นมีแต่ลมร้อน</span>
+                <span class="tag-btn" onclick="addSymptom('แอร์เย็นข้างเดียว')">แอร์เย็นข้างเดียว</span>
+                <span class="tag-btn" onclick="addSymptom('แอร์มีกลิ่นเหม็นอับ')">แอร์มีกลิ่นเหม็นอับ</span>
+                <span class="tag-btn" onclick="addSymptom('แอร์มีเสียงดัง')">แอร์มีเสียงดัง</span>
+                <span class="tag-btn" onclick="addSymptom('ขับเย็นจอดไม่เย็น')">ขับเย็นจอดไม่เย็น</span>
+              </div>
             </div>
+          </div>
+
+          <div class="booking-note">
+            <p class="note-title"><i class="fa-solid fa-circle-info"></i> ข้อกำหนดการเข้ารับบริการ</p>
+            <ul>
+              <li>เพื่อความรวดเร็ว ลูกค้าสามารถนำรถเข้ามาล่วงหน้าได้ <strong>30 นาที</strong></li>
+              <li>หากมาหลังเวลานัดหมาย ทางร้านขอสงวนสิทธิ์ให้กับคิวถัดไป หรือลูกค้า Walk-in หน้าร้านก่อนเพื่อความลื่นไหลของคิว</li>
+            </ul>
           </div>
 
           <div class="form-navigation">

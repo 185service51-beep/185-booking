@@ -267,3 +267,26 @@ function formatThaiDate(dateString) {
   const date = new Date(dateString);
   return date.toLocaleDateString('th-TH', options);
 }
+
+// เพิ่มข้อความอาการเสียสำเร็จรูปเข้าไปใน textarea รายละเอียด
+function addSymptom(text) {
+  const textarea = document.getElementById("serviceDetails");
+  if (!textarea) return;
+
+  const currentVal = textarea.value.trim();
+  if (currentVal === "") {
+    textarea.value = text;
+  } else {
+    // ป้องกันการใส่ข้อความซ้ำ
+    if (!currentVal.includes(text)) {
+      // ตรวจสอบว่าลงท้ายด้วยเครื่องหมายลูกน้ำหรือเว้นวรรคหรือไม่
+      if (currentVal.endsWith(",") || currentVal.endsWith(" ")) {
+        textarea.value = currentVal + " " + text;
+      } else {
+        textarea.value = currentVal + ", " + text;
+      }
+    }
+  }
+  // เลื่อนเคอร์เซอร์ไปหลังสุดและโฟกัสกลับไปที่ textarea
+  textarea.focus();
+}
