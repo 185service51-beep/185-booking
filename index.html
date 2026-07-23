@@ -13,6 +13,7 @@
 </head>
 <body>
   <div class="background-decor">
+    <canvas id="particleCanvas"></canvas>
     <div class="glow-circle primary-glow"></div>
     <div class="glow-circle secondary-glow"></div>
   </div>
@@ -110,8 +111,13 @@
           </div>
 
           <p class="section-title mt-4"><i class="fa-regular fa-clock"></i> เลือกเวลา (เปิดบริการ 08:30 – 14:00 น.)</p>
-          <div class="time-slots-info" id="timeSlotsLoading" style="display:none;">
-            <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังตรวจสอบคิว...
+          <div class="time-grid hidden" id="timeSlotsLoading">
+            <div class="skeleton-slot"></div>
+            <div class="skeleton-slot"></div>
+            <div class="skeleton-slot"></div>
+            <div class="skeleton-slot"></div>
+            <div class="skeleton-slot"></div>
+            <div class="skeleton-slot"></div>
           </div>
           <div class="time-slots-info error-message hidden" id="timeSlotsError">
             <i class="fa-solid fa-triangle-exclamation"></i> โหลดข้อมูลคิวไม่สำเร็จ กรุณาลองใหม่
@@ -160,7 +166,7 @@
               <input type="text" id="carLicense" name="carLicense" required placeholder="เช่น กข 1234 กรุงเทพฯ" autocomplete="off">
             </div>
 
-            <div class="form-group">
+             <div class="form-group">
               <label for="carModel"><i class="fa-solid fa-car-side"></i> ยี่ห้อ / รุ่นรถ <span class="required">*</span></label>
               <input type="text" id="carModel" name="carModel" required placeholder="เช่น Toyota Camry ปี 2022">
             </div>
@@ -199,8 +205,11 @@
 
         <!-- ═══ STEP 3 SUCCESS ═══ -->
         <section class="form-step success-container" id="step3">
-          <div class="success-icon-wrapper">
-            <i class="fa-solid fa-circle-check success-icon animate-pop"></i>
+          <div class="success-checkmark">
+            <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+              <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+              <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/>
+            </svg>
           </div>
           <h2>จองคิวสำเร็จ! 🎉</h2>
           <p>ระบบบันทึกข้อมูลและแจ้งแอดมินเรียบร้อยแล้วครับ</p>

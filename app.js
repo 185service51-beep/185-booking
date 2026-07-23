@@ -25,6 +25,12 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
+
+  // เริ่มต้นระบบเอฟเฟกต์อนุภาคพื้นหลัง (Background Particles)
+  initParticles();
+  
+  // เรียกใช้งานหน้าแรกให้แสดงอนิเมชั่น
+  goToStep(1);
 });
 
 // ฟังก์ชันสร้างแถบเลือกวันที่แบบเลื่อน (Rolling Dates)
@@ -166,19 +172,27 @@ function renderTimeSlots(queueData) {
   });
 }
 
-// ควบคุมการเปลี่ยนหน้า (Step)
+// ควบคุมการเปลี่ยนหน้า (Step) พร้อมอนิเมชั่นเลื่อนอย่างนุ่มนวล
 function goToStep(step) {
-  // ซ่อนทุกขั้นตอน
+  // ซ่อนทุกขั้นตอนด้วยการเฟดออกก่อน
   document.querySelectorAll(".form-step").forEach(stepEl => {
-    stepEl.classList.remove("active");
+    stepEl.classList.remove("active", "fade-in");
+    stepEl.style.display = "none";
   });
+  
   // นำ Active ออกจาก Step Indicator ทุกตัว
   document.querySelectorAll(".step-item").forEach(indicator => {
     indicator.classList.remove("active");
   });
 
-  // แสดงขั้นตอนที่เลือก
-  document.getElementById(`step${step}`).classList.add("active");
+  // แสดงขั้นตอนที่เลือกพร้อมเฟดอิน
+  const currentStep = document.getElementById(`step${step}`);
+  if (currentStep) {
+    currentStep.style.display = "block";
+    // Force Reflow เพื่อให้ CSS transition ทำงานหลังจากเปลี่ยน display
+    currentStep.offsetHeight;
+    currentStep.classList.add("active", "fade-in");
+  }
   
   // ไฮไลต์ Step Indicator
   for (let i = 1; i <= step; i++) {
@@ -289,4 +303,64 @@ function addSymptom(text) {
   }
   // เลื่อนเคอร์เซอร์ไปหลังสุดและโฟกัสกลับไปที่ textarea
   textarea.focus();
+}
+
+// ฟังก์ชันจำลองระบบอนุภาคสีแดงลอยขึ้นด้านหลัง (Particle Background)
+function initParticles() {
+  const canvas = document.getElementById('particleCanvas');
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  
+  let width = canvas.width = window.innerWidth;
+  let height = canvas.height = window.innerHeight;
+  
+  window.addEventListener('resize', () => {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  });
+  
+  const particles = [];
+  const particleCount = 25; // จำนวนอนุภาค (ไม่เยอะเกินไปเพื่อความลื่นไหล)
+  
+  class Particle {
+    constructor() {
+      this.reset();
+    }
+    reset() {
+      this.x = Math.random() * width;
+      this.y = Math.random() * height + 20; // เริ่มจากด้านล่าง
+      this.size = Math.random() * 2 + 1; // ขนาดสุ่ม 1-3px
+      this.speedY = -(Math.random() * 0.5 + 0.1); // ลอยขึ้นช้าๆ
+      this.speedX = Math.random() * 0.2 - 0.1;
+      this.alpha = Math.random() * 0.4 + 0.1; // ความโปร่งใส
+    }
+    update() {
+      this.y += this.speedY;
+      this.x += this.speedX;
+      if (this.y < -10) {
+        this.reset();
+      }
+    }
+    draw() {
+      ctx.fillStyle = `rgba(225, 29, 41, ${this.alpha})`;
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  
+  for (let i = 0; i < particleCount; i++) {
+    particles.push(new Particle());
+  }
+  
+  function animate() {
+    ctx.clearRect(0, 0, width, height);
+    particles.forEach(p => {
+      p.update();
+      p.draw();
+    });
+    requestAnimationFrame(animate);
+  }
+  
+  animate();
 }
