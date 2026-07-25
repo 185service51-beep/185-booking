@@ -229,6 +229,92 @@
       border-top: 1px solid var(--black-border);
       border-radius: var(--radius);
     }
+
+    /* LINE Quota Card */
+    .quota-card {
+      background: linear-gradient(135deg, rgba(6,185,80,0.08) 0%, rgba(0,195,140,0.06) 100%);
+      border: 1px solid rgba(6,185,80,0.25);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .quota-card .quota-icon {
+      font-size: 2rem;
+      flex-shrink: 0;
+    }
+    .quota-info {
+      flex: 1;
+      min-width: 180px;
+    }
+    .quota-info h4 {
+      font-size: 0.85rem;
+      color: var(--gray);
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+    .quota-numbers {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: 8px;
+    }
+    .quota-numbers span.used {
+      color: #4ade80;
+    }
+    .quota-numbers span.limit {
+      color: var(--gray);
+      font-size: 1rem;
+    }
+    .quota-bar-bg {
+      background: rgba(255,255,255,0.08);
+      border-radius: 99px;
+      height: 8px;
+      overflow: hidden;
+      width: 100%;
+    }
+    .quota-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.8s ease;
+      background: linear-gradient(90deg, #06b950, #00c38c);
+    }
+    .quota-bar-fill.warn {
+      background: linear-gradient(90deg, #f59e0b, #ef4444);
+    }
+    .quota-meta {
+      font-size: 0.78rem;
+      color: var(--gray);
+      margin-top: 4px;
+    }
+    .quota-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .quota-refresh-btn {
+      background: none;
+      border: 1px solid rgba(255,255,255,0.15);
+      color: var(--gray);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+    .quota-refresh-btn:hover {
+      border-color: #06b950;
+      color: #4ade80;
+    }
+    @media (max-width: 768px) {
+      .quota-actions { align-items: flex-start; }
+      .quota-card { flex-direction: column; gap: 12px; }
+    }
     
     /* FullCalendar custom styling */
     .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid {
@@ -422,6 +508,27 @@
         <div class="nav-tabs">
           <button class="tab-link active" id="btnTabList" onclick="switchView('list')"><i class="fa-solid fa-list"></i> ตารางคิว</button>
           <button class="tab-link" id="btnTabCalendar" onclick="switchView('calendar')"><i class="fa-solid fa-calendar-days"></i> ปฏิทินแบบเต็ม</button>
+        </div>
+
+        <!-- LINE Quota Card -->
+        <div class="quota-card" id="quotaCard">
+          <div class="quota-icon">💬</div>
+          <div class="quota-info">
+            <h4>โควตาข้อความ LINE OA เดือนนี้</h4>
+            <div class="quota-numbers">
+              <span class="used" id="quotaUsed">--</span>
+              <span class="limit"> / <span id="quotaLimit">--</span> ข้อความ</span>
+            </div>
+            <div class="quota-bar-bg">
+              <div class="quota-bar-fill" id="quotaBarFill" style="width:0%"></div>
+            </div>
+            <div class="quota-meta" id="quotaMeta">กำลังโหลดข้อมูลโควตา...</div>
+          </div>
+          <div class="quota-actions">
+            <button class="quota-refresh-btn" onclick="loadLineQuota()">
+              <i class="fa-solid fa-rotate" id="quotaRefreshIcon"></i> รีเฟรช
+            </button>
+          </div>
         </div>
 
         <!-- Toolbar controls -->
