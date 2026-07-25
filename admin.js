@@ -93,22 +93,22 @@ function renderBookingsTable(data) {
     }
 
     tr.innerHTML = `
-      <td>
+      <td data-label="วัน/เวลานัด">
         <strong style="color: var(--accent-color);">${formatThaiDate(item.date)}</strong><br>
         <small><i class="fa-regular fa-clock"></i> ${item.time} น.</small>
       </td>
-      <td><strong>${item.branch}</strong></td>
-      <td>
+      <td data-label="สาขา"><strong>${item.branch}</strong></td>
+      <td data-label="ข้อมูลลูกค้า">
         <strong>${item.customerName}</strong><br>
         <small><i class="fa-solid fa-phone"></i> ${item.customerPhone}</small>
       </td>
-      <td>
+      <td data-label="ข้อมูลรถยนต์">
         <strong>${item.carLicense}</strong><br>
         <small>${item.carModel}</small>
       </td>
-      <td><p style="max-width: 250px; font-size: 0.85rem; color: var(--text-light); word-wrap: break-word;">${item.serviceDetails || '-'}</p></td>
-      <td><span class="badge ${badgeClass}">${statusText}</span></td>
-      <td>
+      <td data-label="รายละเอียด"><p style="max-width: 250px; font-size: 0.85rem; color: var(--text-light); word-wrap: break-word;">${item.serviceDetails || '-'}</p></td>
+      <td data-label="สถานะ"><span class="badge ${badgeClass}">${statusText}</span></td>
+      <td data-label="จัดการ">
         <div class="action-btn-group">
           <button class="btn-icon btn-edit" onclick="openEditModal('${item.bookingId}')" title="แก้ไขคิว"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
