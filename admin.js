@@ -34,6 +34,7 @@ function showDashboard() {
   document.getElementById("loginScreen").classList.add("hidden");
   document.getElementById("dashboardScreen").classList.remove("hidden");
   loadBookings();
+  loadLineQuota();
 }
 
 // ฟังก์ชันออกจากระบบ
@@ -244,6 +245,71 @@ function formatThaiDate(dateString) {
   const options = { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' };
   const date = new Date(dateString + 'T00:00:00');
   return date.toLocaleDateString('th-TH', options);
+}
+
+// ─── LINE Quota Tracker ────────────────────────────────
+async function loadLineQuota() {
+  const iconEl = document.getElementById('quotaRefreshIcon');
+  const metaEl = document.getElementById('quotaMeta');
+  const usedEl = document.getElementById('quotaUsed');
+  const limitEl = document.getElementById('quotaLimit');
+  const barEl = document.getElementById('quotaBarFill');
+
+  // แสดงสถานะกำลังโหลด
+  iconEl.classList.add('fa-spin');
+  metaEl.textContent = 'กำลังโหลดข้อมูลโควตา...';
+
+  try {
+    const res = await fetch(`${GAS_API_URL}?action=getLineQuota`);
+    if (!res.ok) throw new Error('Network error');
+    const result = await res.json();
+
+    if (result.status !== 'success') throw new Error(result.message || 'Unknown error');
+
+    const used = result.totalUsage ?? 0;
+    const limit = result.quotaLimit ?? 0;
+    const isUnlimited = result.quotaType === 'none';
+
+    usedEl.textContent = used.toLocaleString();
+
+    if (isUnlimited) {
+      limitEl.textContent = '∞ (ไม่จำกัด)';
+      barEl.style.width = '0%';
+      barEl.classList.remove('warn');
+      metaEl.textContent = 'แพ็กเกจของคุณไม่จำกัดจำนวนข้อความ';
+    } else {
+      limitEl.textContent = limit.toLocaleString();
+      const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
+      const remaining = Math.max(limit - used, 0);
+      barEl.style.width = pct.toFixed(1) + '%';
+
+      if (pct >= 80) {
+        barEl.classList.add('warn');
+        metaEl.innerHTML = `⚠️ เหลือ <strong style="color:#fbbf24">${remaining.toLocaleString()}</strong> ข้อความ (${(100 - pct).toFixed(1)}%) — ใกล้เต็มโควตาแล้ว!`;
+      } else {
+        barEl.classList.remove('warn');
+        metaEl.textContent = `เหลือ ${remaining.toLocaleString()} ข้อความ (${(100 - pct).toFixed(1)}%) — ใช้ไปแล้ว ${pct.toFixed(1)}%`;
+      }
+    }
+
+    // อัปเดตสีการ์ดตามระดับการใช้งาน
+    const card = document.getElementById('quotaCard');
+    if (!isUnlimited && (used / limit) >= 0.8) {
+      card.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(245,158,11,0.06) 100%)';
+      card.style.borderColor = 'rgba(239,68,68,0.3)';
+    } else {
+      card.style.background = '';
+      card.style.borderColor = '';
+    }
+
+  } catch (err) {
+    console.error('Quota fetch error:', err);
+    usedEl.textContent = '?';
+    limitEl.textContent = '?';
+    metaEl.textContent = 'ไม่สามารถโหลดข้อมูลโควตาได้ (' + err.message + ')';
+  } finally {
+    iconEl.classList.remove('fa-spin');
+  }
 }
 
 // ─── Calendar View ─────────────────────────────────────
