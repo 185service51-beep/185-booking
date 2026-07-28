@@ -62,7 +62,7 @@ async function loadBookings() {
     const result = await response.json();
     if (result.status === "success") {
       bookingsList = result.data;
-      renderBookingsTable(bookingsList);
+      filterBookings();
     } else {
       throw new Error(result.message);
     }
@@ -72,15 +72,36 @@ async function loadBookings() {
   }
 }
 
+// ช่วยดึงวันที่วันนี้ในรูปแบบ YYYY-MM-DD
+function getTodayString() {
+  const d = new Date();
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+// ช่วยดึงวันที่พรุ่งนี้ในรูปแบบ YYYY-MM-DD
+function getTomorrowString() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 // เรนเดอร์ตารางข้อมูล
 function renderBookingsTable(data) {
   const tableBody = document.getElementById("bookingsTableBody");
   tableBody.innerHTML = "";
 
   if (data.length === 0) {
-    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-light);">ไม่มีข้อมูลการจองคิวรถในระบบ</td></tr>`;
+    tableBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-light); padding: 30px;">ไม่พบข้อมูลการจองคิวตามเงื่อนไขที่เลือก</td></tr>`;
     return;
   }
+
+  const todayStr = getTodayString();
 
   data.forEach(item => {
     const tr = document.createElement("tr");
@@ -93,9 +114,12 @@ function renderBookingsTable(data) {
       statusText = "ยกเลิกแล้ว";
     }
 
+    const isToday = item.date === todayStr;
+    const todayBadge = isToday ? `<span style="background: rgba(6,185,80,0.2); color: #4ade80; border: 1px solid rgba(6,185,80,0.4); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">🔥 วันนี้</span>` : '';
+
     tr.innerHTML = `
       <td data-label="วัน/เวลานัด">
-        <strong style="color: var(--accent-color);">${formatThaiDate(item.date)}</strong><br>
+        <strong style="color: var(--accent-color);">${formatThaiDate(item.date)}</strong>${todayBadge}<br>
         <small><i class="fa-regular fa-clock"></i> ${item.time} น.</small>
       </td>
       <td data-label="สาขา"><strong>${item.branch}</strong></td>
@@ -122,16 +146,33 @@ function renderBookingsTable(data) {
 // ค้นหาและกรองข้อมูลคิวฝั่ง Client-side
 function filterBookings() {
   const searchQuery = document.getElementById("searchInput").value.toLowerCase();
+  const selectedDate = document.getElementById("dateFilter") ? document.getElementById("dateFilter").value : "";
   const selectedBranch = document.getElementById("branchFilter").value;
   const selectedStatus = document.getElementById("statusFilter").value;
+  const selectedSort = document.getElementById("sortFilter") ? document.getElementById("sortFilter").value : "nearest";
 
-  const filtered = bookingsList.filter(item => {
+  const todayStr = getTodayString();
+  const tomorrowStr = getTomorrowString();
+
+  let filtered = bookingsList.filter(item => {
     const matchSearch = 
       item.customerName.toLowerCase().includes(searchQuery) ||
       item.customerPhone.includes(searchQuery) ||
       item.carLicense.toLowerCase().includes(searchQuery) ||
       item.bookingId.toLowerCase().includes(searchQuery);
     
+    let matchDate = true;
+    if (selectedDate === "upcoming" || selectedDate === "") {
+      // ซ่อนวันที่ผ่านไปแล้ว (แสดงตั้งแต่วันนี้เป็นต้นไป)
+      matchDate = item.date >= todayStr;
+    } else if (selectedDate === "today") {
+      matchDate = item.date === todayStr;
+    } else if (selectedDate === "tomorrow") {
+      matchDate = item.date === tomorrowStr;
+    } else if (selectedDate === "all") {
+      matchDate = true; // รวมประวัติย้อนหลังทั้งหมด
+    }
+
     const matchBranch = selectedBranch === "" || item.branch === selectedBranch;
     
     let matchStatus = true;
@@ -141,7 +182,20 @@ function filterBookings() {
       matchStatus = item.status.includes("ยกเลิก");
     }
 
-    return matchSearch && matchBranch && matchStatus;
+    return matchSearch && matchDate && matchBranch && matchStatus;
+  });
+
+  // เรียงลำดับข้อมูล
+  filtered.sort((a, b) => {
+    if (selectedSort === "nearest") {
+      // คิวใกล้ถึงก่อน: เรียงตามวันเวลานัดหมาย (น้อยไปมาก)
+      const timeA = a.date + 'T' + (a.time.length === 5 ? a.time : a.time.substring(0, 5)) + ':00';
+      const timeB = b.date + 'T' + (b.time.length === 5 ? b.time : b.time.substring(0, 5)) + ':00';
+      return new Date(timeA) - new Date(timeB);
+    } else {
+      // ล่าสุดขึ้นก่อน: เรียงจากวันเวลาทำรายการ (มากไปน้อย)
+      return new Date(b.timestamp) - new Date(a.timestamp);
+    }
   });
 
   renderBookingsTable(filtered);
@@ -367,10 +421,13 @@ function getBranchColor(branch) {
   return colors[branch] || { background: '#e11d29', border: '#b91c25' };
 }
 
-// แปลงข้อมูล bookings เป็น FullCalendar events
+// แปลงข้อมูล bookings เป็น FullCalendar events (พร้อมตัวกรองสาขา)
 function bookingsToEvents(data) {
+  const calBranch = document.getElementById('calBranchFilter') ? document.getElementById('calBranchFilter').value : '';
+
   return data
     .filter(item => !item.status.includes('ยกเลิก'))
+    .filter(item => calBranch === '' || item.branch === calBranch)
     .map(item => {
       const color = getBranchColor(item.branch);
       const dateTime = item.date + 'T' + (item.time.length === 5 ? item.time : item.time.substring(0, 5)) + ':00';
