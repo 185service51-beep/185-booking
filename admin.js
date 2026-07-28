@@ -250,65 +250,74 @@ function formatThaiDate(dateString) {
 // ─── LINE Quota Tracker ────────────────────────────────
 async function loadLineQuota() {
   const iconEl = document.getElementById('quotaRefreshIcon');
-  const metaEl = document.getElementById('quotaMeta');
-  const usedEl = document.getElementById('quotaUsed');
-  const limitEl = document.getElementById('quotaLimit');
-  const barEl = document.getElementById('quotaBarFill');
+  const gridEl = document.getElementById('quotaGrid');
 
-  // แสดงสถานะกำลังโหลด
-  iconEl.classList.add('fa-spin');
-  metaEl.textContent = 'กำลังโหลดข้อมูลโควตา...';
+  if (iconEl) iconEl.classList.add('fa-spin');
+  if (gridEl) gridEl.innerHTML = '<div class="quota-loading">กำลังโหลดข้อมูลโควตา...</div>';
 
   try {
     const res = await fetch(`${GAS_API_URL}?action=getLineQuota`);
     if (!res.ok) throw new Error('Network error');
     const result = await res.json();
 
-    if (result.status !== 'success') throw new Error(result.message || 'Unknown error');
+    if (result.status !== 'success' || !result.quotas) {
+      throw new Error(result.message || 'ไม่สามารถโหลดข้อมูลโควตาได้');
+    }
 
-    const used = result.totalUsage ?? 0;
-    const limit = result.quotaLimit ?? 0;
-    const isUnlimited = result.quotaType === 'none';
+    const quotas = result.quotas;
+    let html = '';
 
-    usedEl.textContent = used.toLocaleString();
-
-    if (isUnlimited) {
-      limitEl.textContent = '∞ (ไม่จำกัด)';
-      barEl.style.width = '0%';
-      barEl.classList.remove('warn');
-      metaEl.textContent = 'แพ็กเกจของคุณไม่จำกัดจำนวนข้อความ';
-    } else {
-      limitEl.textContent = limit.toLocaleString();
-      const pct = limit > 0 ? Math.min((used / limit) * 100, 100) : 0;
-      const remaining = Math.max(limit - used, 0);
-      barEl.style.width = pct.toFixed(1) + '%';
-
-      if (pct >= 80) {
-        barEl.classList.add('warn');
-        metaEl.innerHTML = `⚠️ เหลือ <strong style="color:#fbbf24">${remaining.toLocaleString()}</strong> ข้อความ (${(100 - pct).toFixed(1)}%) — ใกล้เต็มโควตาแล้ว!`;
-      } else {
-        barEl.classList.remove('warn');
-        metaEl.textContent = `เหลือ ${remaining.toLocaleString()} ข้อความ (${(100 - pct).toFixed(1)}%) — ใช้ไปแล้ว ${pct.toFixed(1)}%`;
+    for (const key in quotas) {
+      const q = quotas[key];
+      if (q.status === 'error') {
+        html += `
+          <div class="mini-quota-card warn">
+            <div class="mini-quota-title"><span>💬 ${q.name || key}</span> ⚠️</div>
+            <div class="mini-quota-meta" style="color:#f87171">ไม่สามารถดึงข้อมูลได้</div>
+          </div>
+        `;
+        continue;
       }
+
+      const used = q.totalUsage ?? 0;
+      const limit = q.quotaLimit ?? 0;
+      const isUnlimited = q.quotaType === 'none';
+      const pct = (!isUnlimited && limit > 0) ? Math.min((used / limit) * 100, 100) : 0;
+      const isWarn = !isUnlimited && pct >= 80;
+
+      const limitText = isUnlimited ? '∞' : limit.toLocaleString();
+      const pctText = isUnlimited ? 'ไม่จำกัด' : `${pct.toFixed(0)}%`;
+      const remainingText = isUnlimited ? 'ไม่จำกัด' : `เหลือ ${(Math.max(limit - used, 0)).toLocaleString()} ข้อความ`;
+
+      html += `
+        <div class="mini-quota-card ${isWarn ? 'warn' : ''}">
+          <div class="mini-quota-title">
+            <span>💬 ${q.name}</span>
+            <span style="font-size:0.75rem; color:${isWarn ? '#fbbf24' : '#9ca3af'}">${pctText}</span>
+          </div>
+          <div class="mini-quota-numbers">
+            <span class="used">${used.toLocaleString()}</span>
+            <span class="limit"> / ${limitText}</span>
+          </div>
+          <div class="mini-quota-bar-bg">
+            <div class="mini-quota-bar-fill" style="width: ${isUnlimited ? 0 : pct.toFixed(1)}%"></div>
+          </div>
+          <div class="mini-quota-meta">
+            ${isWarn ? '⚠️ ' : ''}${remainingText}
+          </div>
+        </div>
+      `;
     }
 
-    // อัปเดตสีการ์ดตามระดับการใช้งาน
-    const card = document.getElementById('quotaCard');
-    if (!isUnlimited && (used / limit) >= 0.8) {
-      card.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(245,158,11,0.06) 100%)';
-      card.style.borderColor = 'rgba(239,68,68,0.3)';
-    } else {
-      card.style.background = '';
-      card.style.borderColor = '';
-    }
+    if (gridEl) gridEl.innerHTML = html || '<div class="quota-loading">ไม่พบข้อมูลโควตา</div>';
 
   } catch (err) {
     console.error('Quota fetch error:', err);
-    usedEl.textContent = '?';
-    limitEl.textContent = '?';
-    metaEl.textContent = 'ไม่สามารถโหลดข้อมูลโควตาได้ (' + err.message + ')';
+    if (gridEl) {
+      gridEl.innerHTML = `<div class="quota-loading" style="color:#f87171">ไม่สามารถโหลดข้อมูลโควตาได้ (${err.message})</div>`;
+    }
   } finally {
-    iconEl.classList.remove('fa-spin');
+    if (iconEl) iconEl.classList.remove('fa-spin');
   }
 }
 

@@ -230,71 +230,99 @@
       border-radius: var(--radius);
     }
 
-    /* LINE Quota Card */
-    .quota-card {
-      background: linear-gradient(135deg, rgba(6,185,80,0.08) 0%, rgba(0,195,140,0.06) 100%);
-      border: 1px solid rgba(6,185,80,0.25);
+    /* LINE Quota Section & Grid */
+    .quota-section {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid rgba(255,255,255,0.08);
       border-radius: 12px;
-      padding: 16px 20px;
-      margin-bottom: 20px;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .quota-section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .quota-section-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--white);
+      margin: 0;
       display: flex;
       align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
+      gap: 8px;
     }
-    .quota-card .quota-icon {
-      font-size: 2rem;
-      flex-shrink: 0;
+    .quota-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
     }
-    .quota-info {
-      flex: 1;
-      min-width: 180px;
+    .mini-quota-card {
+      background: linear-gradient(135deg, rgba(6,185,80,0.06) 0%, rgba(0,195,140,0.04) 100%);
+      border: 1px solid rgba(6,185,80,0.2);
+      border-radius: 10px;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      transition: all 0.3s ease;
     }
-    .quota-info h4 {
+    .mini-quota-card.warn {
+      background: linear-gradient(135deg, rgba(239,68,68,0.08) 0%, rgba(245,158,11,0.06) 100%);
+      border-color: rgba(239,68,68,0.3);
+    }
+    .mini-quota-title {
       font-size: 0.85rem;
-      color: var(--gray);
-      margin-bottom: 4px;
-      font-weight: 500;
+      font-weight: 600;
+      color: var(--white);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
-    .quota-numbers {
-      font-size: 1.3rem;
+    .mini-quota-numbers {
+      font-size: 1.2rem;
       font-weight: 700;
       color: var(--white);
-      margin-bottom: 8px;
     }
-    .quota-numbers span.used {
+    .mini-quota-numbers .used {
       color: #4ade80;
     }
-    .quota-numbers span.limit {
-      color: var(--gray);
-      font-size: 1rem;
+    .mini-quota-card.warn .mini-quota-numbers .used {
+      color: #f87171;
     }
-    .quota-bar-bg {
+    .mini-quota-numbers .limit {
+      font-size: 0.85rem;
+      color: var(--gray);
+    }
+    .mini-quota-bar-bg {
       background: rgba(255,255,255,0.08);
       border-radius: 99px;
-      height: 8px;
+      height: 6px;
       overflow: hidden;
       width: 100%;
     }
-    .quota-bar-fill {
+    .mini-quota-bar-fill {
       height: 100%;
       border-radius: 99px;
       transition: width 0.8s ease;
       background: linear-gradient(90deg, #06b950, #00c38c);
     }
-    .quota-bar-fill.warn {
+    .mini-quota-card.warn .mini-quota-bar-fill {
       background: linear-gradient(90deg, #f59e0b, #ef4444);
     }
-    .quota-meta {
-      font-size: 0.78rem;
+    .mini-quota-meta {
+      font-size: 0.75rem;
       color: var(--gray);
-      margin-top: 4px;
     }
-    .quota-actions {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
+    .quota-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 20px;
+      color: var(--gray);
+      font-size: 0.9rem;
     }
     .quota-refresh-btn {
       background: none;
@@ -310,10 +338,6 @@
     .quota-refresh-btn:hover {
       border-color: #06b950;
       color: #4ade80;
-    }
-    @media (max-width: 768px) {
-      .quota-actions { align-items: flex-start; }
-      .quota-card { flex-direction: column; gap: 12px; }
     }
     
     /* FullCalendar custom styling */
@@ -510,24 +534,16 @@
           <button class="tab-link" id="btnTabCalendar" onclick="switchView('calendar')"><i class="fa-solid fa-calendar-days"></i> ปฏิทินแบบเต็ม</button>
         </div>
 
-        <!-- LINE Quota Card -->
-        <div class="quota-card" id="quotaCard">
-          <div class="quota-icon">💬</div>
-          <div class="quota-info">
-            <h4>โควตาข้อความ LINE OA เดือนนี้</h4>
-            <div class="quota-numbers">
-              <span class="used" id="quotaUsed">--</span>
-              <span class="limit"> / <span id="quotaLimit">--</span> ข้อความ</span>
-            </div>
-            <div class="quota-bar-bg">
-              <div class="quota-bar-fill" id="quotaBarFill" style="width:0%"></div>
-            </div>
-            <div class="quota-meta" id="quotaMeta">กำลังโหลดข้อมูลโควตา...</div>
-          </div>
-          <div class="quota-actions">
+        <!-- LINE Quota Section -->
+        <div class="quota-section" id="quotaSection">
+          <div class="quota-section-header">
+            <h3><i class="fa-solid fa-comments" style="color: #06b950;"></i> โควตาข้อความ LINE OA ประจำเดือน (5 บัญชี)</h3>
             <button class="quota-refresh-btn" onclick="loadLineQuota()">
-              <i class="fa-solid fa-rotate" id="quotaRefreshIcon"></i> รีเฟรช
+              <i class="fa-solid fa-rotate" id="quotaRefreshIcon"></i> รีเฟรชโควตา
             </button>
+          </div>
+          <div class="quota-grid" id="quotaGrid">
+            <div class="quota-loading">กำลังโหลดข้อมูลโควตา...</div>
           </div>
         </div>
 
