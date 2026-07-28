@@ -379,33 +379,47 @@ async function loadLineQuota() {
 let calendarInstance = null;
 let calendarInitialized = false;
 
-// สลับมุมมองระหว่าง List และ Calendar
+// สลับมุมมองระหว่าง List, Calendar และ Analytics
 function switchView(view) {
   const listContainer = document.getElementById('listViewContainer');
   const calContainer = document.getElementById('calendarViewContainer');
+  const analyticsContainer = document.getElementById('analyticsViewContainer');
   const listToolbar = document.getElementById('listToolbar');
+
   const btnList = document.getElementById('btnTabList');
   const btnCal = document.getElementById('btnTabCalendar');
+  const btnAnalytics = document.getElementById('btnTabAnalytics');
+
+  if (btnList) btnList.classList.remove('active');
+  if (btnCal) btnCal.classList.remove('active');
+  if (btnAnalytics) btnAnalytics.classList.remove('active');
+
+  if (listContainer) listContainer.classList.add('hidden');
+  if (calContainer) calContainer.classList.add('hidden');
+  if (analyticsContainer) analyticsContainer.classList.add('hidden');
+  if (listToolbar) listToolbar.classList.add('hidden');
 
   if (view === 'list') {
-    listContainer.classList.remove('hidden');
-    calContainer.classList.add('hidden');
-    listToolbar.classList.remove('hidden');
-    btnList.classList.add('active');
-    btnCal.classList.remove('active');
-  } else {
-    listContainer.classList.add('hidden');
-    calContainer.classList.remove('hidden');
-    listToolbar.classList.add('hidden');
-    btnList.classList.remove('active');
-    btnCal.classList.add('active');
+    if (listContainer) listContainer.classList.remove('hidden');
+    if (listToolbar) listToolbar.classList.remove('hidden');
+    if (btnList) btnList.classList.add('active');
+  } else if (view === 'calendar') {
+    if (calContainer) calContainer.classList.remove('hidden');
+    if (btnCal) btnCal.classList.add('active');
 
-    // สร้างปฏิทินครั้งแรกเมื่อสลับมุมมอง
     if (!calendarInitialized) {
       initCalendar();
     } else {
-      // อัปเดตกิจกรรมในปฏิทินจากข้อมูลล่าสุด
       updateCalendarEvents();
+    }
+  } else if (view === 'analytics') {
+    if (analyticsContainer) analyticsContainer.classList.remove('hidden');
+    if (btnAnalytics) btnAnalytics.classList.add('active');
+
+    if (!analyticsInitialized) {
+      initAnalytics();
+    } else {
+      updateAnalytics();
     }
   }
 }
@@ -498,4 +512,319 @@ function updateCalendarEvents() {
   calendarInstance.removeAllEvents();
   // เพิ่ม events ใหม่ทั้งหมดจากข้อมูลล่าสุด
   bookingsToEvents(bookingsList).forEach(ev => calendarInstance.addEvent(ev));
+}
+
+// ─── Data Analysis & Chart.js ──────────────────────────────
+let analyticsInitialized = false;
+let monthlyBranchChartInstance = null;
+let branchShareChartInstance = null;
+let timeSlotsChartInstance = null;
+
+// เริ่มต้นส่วนวิเคราะห์ข้อมูล
+function initAnalytics() {
+  populateYearFilter();
+  updateAnalytics();
+  analyticsInitialized = true;
+}
+
+// เติมตัวเลือกปีลงใน Dropdown
+function populateYearFilter() {
+  const yearSelect = document.getElementById('analyticsYearFilter');
+  if (!yearSelect) return;
+
+  const currentYear = new Date().getFullYear();
+  const years = new Set([currentYear]);
+
+  if (bookingsList && bookingsList.length > 0) {
+    bookingsList.forEach(item => {
+      if (item.date && item.date.length >= 4) {
+        const y = parseInt(item.date.substring(0, 4));
+        if (!isNaN(y)) years.add(y);
+      }
+    });
+  }
+
+  const sortedYears = Array.from(years).sort((a, b) => b - a);
+  yearSelect.innerHTML = sortedYears.map(y => `<option value="${y}">ปี ${y + 543} (${y})</option>`).join('');
+}
+
+// อัปเดตข้อมูลสถิติและการ์ด KPI ทั้งหมด
+function updateAnalytics() {
+  if (!bookingsList) return;
+
+  const yearSelect = document.getElementById('analyticsYearFilter');
+  const targetYear = yearSelect ? parseInt(yearSelect.value) || new Date().getFullYear() : new Date().getFullYear();
+
+  const validBookings = bookingsList.filter(item => !item.status.includes('ยกเลิก'));
+
+  // 1. คำนวณ KPI
+  const now = new Date();
+  const currentYearNum = now.getFullYear();
+  const currentMonthNum = now.getMonth() + 1; // 1-12
+  const currentMonthStr = `${currentYearNum}-${String(currentMonthNum).padStart(2, '0')}`;
+
+  const prevMonthDate = new Date(currentYearNum, currentMonthNum - 2, 1);
+  const prevYearNum = prevMonthDate.getFullYear();
+  const prevMonthNum = prevMonthDate.getMonth() + 1;
+  const prevMonthStr = `${prevYearNum}-${String(prevMonthNum).padStart(2, '0')}`;
+
+  // ยอดจองรวมทั้งหมด
+  document.getElementById('kpiTotalBookings').textContent = validBookings.length.toLocaleString();
+
+  // ยอดจองเดือนนี้ และ เดือนก่อน
+  const thisMonthBookings = validBookings.filter(item => item.date && item.date.startsWith(currentMonthStr));
+  const lastMonthBookings = validBookings.filter(item => item.date && item.date.startsWith(prevMonthStr));
+
+  const thisMonthCount = thisMonthBookings.length;
+  const lastMonthCount = lastMonthBookings.length;
+
+  document.getElementById('kpiMonthBookings').textContent = thisMonthCount.toLocaleString();
+
+  // MoM Growth %
+  const momEl = document.getElementById('kpiMomGrowth');
+  if (lastMonthCount === 0) {
+    momEl.innerHTML = `<span style="color: #9ca3af">เทียบเดือนก่อน: N/A</span>`;
+  } else {
+    const growth = ((thisMonthCount - lastMonthCount) / lastMonthCount) * 100;
+    if (growth > 0) {
+      momEl.innerHTML = `<span style="color: #34d399; font-weight:600">▲ +${growth.toFixed(1)}% จากเดือนก่อน</span>`;
+    } else if (growth < 0) {
+      momEl.innerHTML = `<span style="color: #f87171; font-weight:600">▼ ${growth.toFixed(1)}% จากเดือนก่อน</span>`;
+    } else {
+      momEl.innerHTML = `<span style="color: #9ca3af">เท่ากับเดือนก่อน (0%)</span>`;
+    }
+  }
+
+  // สาขาอันดับ 1 ในเดือนนี้
+  const branchCountsThisMonth = {};
+  thisMonthBookings.forEach(b => {
+    branchCountsThisMonth[b.branch] = (branchCountsThisMonth[b.branch] || 0) + 1;
+  });
+
+  let topBranch = '--';
+  let topBranchCount = 0;
+  for (const br in branchCountsThisMonth) {
+    if (branchCountsThisMonth[br] > topBranchCount) {
+      topBranchCount = branchCountsThisMonth[br];
+      topBranch = br;
+    }
+  }
+  document.getElementById('kpiTopBranch').textContent = topBranch !== '--' ? `สาขา${topBranch}` : '--';
+  document.getElementById('kpiTopBranchSub').textContent = topBranch !== '--' ? `${topBranchCount} คิวในเดือนนี้` : 'ไม่มีคิวเดือนนี้';
+
+  // ช่วงเวลายอดฮิต
+  const timeCounts = {};
+  validBookings.forEach(b => {
+    const t = b.time ? b.time.substring(0, 5) : '';
+    if (t) timeCounts[t] = (timeCounts[t] || 0) + 1;
+  });
+
+  let peakTime = '--';
+  let peakCount = 0;
+  for (const t in timeCounts) {
+    if (timeCounts[t] > peakCount) {
+      peakCount = timeCounts[t];
+      peakTime = t;
+    }
+  }
+  document.getElementById('kpiPeakTime').textContent = peakTime !== '--' ? `${peakTime} น.` : '--';
+  document.getElementById('kpiPeakTimeSub').textContent = peakTime !== '--' ? `${peakCount} คิวสะสม` : '--';
+
+  // 2. คำนวณ Capacity Utilization Rate (%) ประจำสาขา
+  renderUtilizationRate(thisMonthBookings, currentYearNum, currentMonthNum);
+
+  // 3. กราฟ 1: สรุปยอดจองรายเดือน แยก 4 สาขา (4 สี)
+  renderMonthlyBranchChart(validBookings, targetYear);
+
+  // 4. กราฟ 2: สัดส่วนยอดจองแยกสาขา (Doughnut Chart)
+  renderBranchShareChart(validBookings, targetYear);
+
+  // 5. กราฟ 3: สถิติจองแยกตามรอบเวลา (12 รอบ)
+  renderTimeSlotsChart(validBookings, targetYear);
+}
+
+// แสดงหลอดอัตราความหนาแน่นของคิว (Capacity Utilization Rate)
+function renderUtilizationRate(thisMonthBookings, year, month) {
+  const gridEl = document.getElementById('utilizationGrid');
+  if (!gridEl) return;
+
+  const daysInMonth = new Date(year, month, 0).getDate();
+  const maxSlotsPerDay = 12;
+  const maxMonthlyCapacity = daysInMonth * maxSlotsPerDay; // 12 * 30 = 360
+
+  const branches = [
+    { name: 'สาย 3', color: '#1a73e8' },
+    { name: 'บางแค', color: '#e67c00' },
+    { name: 'นนทบุรี', color: '#0f9d58' },
+    { name: 'หนองแขม', color: '#7b1fa2' }
+  ];
+
+  const counts = {};
+  thisMonthBookings.forEach(b => {
+    counts[b.branch] = (counts[b.branch] || 0) + 1;
+  });
+
+  let html = '';
+  branches.forEach(br => {
+    const booked = counts[br.name] || 0;
+    const pct = Math.min((booked / maxMonthlyCapacity) * 100, 100);
+
+    html += `
+      <div class="util-item">
+        <div class="util-header">
+          <span>📍 สาขา${br.name}</span>
+          <span class="util-pct" style="color: ${br.color}">${pct.toFixed(1)}%</span>
+        </div>
+        <div class="util-bar-bg">
+          <div class="util-bar-fill" style="width: ${pct.toFixed(1)}%; background: ${br.color}"></div>
+        </div>
+        <div style="font-size: 0.74rem; color: var(--gray); display:flex; justify-content:space-between; margin-top:2px;">
+          <span>จองแล้ว ${booked} คิว</span>
+          <span>เต็ม ${maxMonthlyCapacity} คิว</span>
+        </div>
+      </div>
+    `;
+  });
+
+  gridEl.innerHTML = html;
+}
+
+// กราฟ 1: แท่งรายเดือนแยก 4 สาขา (4 สี)
+function renderMonthlyBranchChart(validBookings, targetYear) {
+  const canvas = document.getElementById('monthlyBranchChart');
+  if (!canvas) return;
+
+  const monthLabels = ['ม.ค.', 'ก.พ.', 'มี.ค.', 'เม.ย.', 'พ.ค.', 'มิ.ย.', 'ก.ค.', 'ส.ค.', 'ก.ย.', 'ต.ค.', 'พ.ย.', 'ธ.ค.'];
+
+  const branchData = {
+    'สาย 3': new Array(12).fill(0),
+    'บางแค': new Array(12).fill(0),
+    'นนทบุรี': new Array(12).fill(0),
+    'หนองแขม': new Array(12).fill(0)
+  };
+
+  validBookings.forEach(item => {
+    if (!item.date || item.date.length < 7) return;
+    const y = parseInt(item.date.substring(0, 4));
+    const m = parseInt(item.date.substring(5, 7)) - 1; // 0-11
+
+    if (y === targetYear && m >= 0 && m < 12 && branchData[item.branch]) {
+      branchData[item.branch][m]++;
+    }
+  });
+
+  const datasets = [
+    { label: 'สาย 3', data: branchData['สาย 3'], backgroundColor: '#1a73e8', borderRadius: 4 },
+    { label: 'บางแค', data: branchData['บางแค'], backgroundColor: '#e67c00', borderRadius: 4 },
+    { label: 'นนทบุรี', data: branchData['นนทบุรี'], backgroundColor: '#0f9d58', borderRadius: 4 },
+    { label: 'หนองแขม', data: branchData['หนองแขม'], backgroundColor: '#7b1fa2', borderRadius: 4 }
+  ];
+
+  if (monthlyBranchChartInstance) monthlyBranchChartInstance.destroy();
+
+  monthlyBranchChartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: { labels: monthLabels, datasets: datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { mode: 'index', intersect: false }
+      },
+      scales: {
+        x: { ticks: { color: '#9ca3af' }, grid: { color: 'rgba(255,255,255,0.05)' } },
+        y: { ticks: { color: '#9ca3af', precision: 0 }, grid: { color: 'rgba(255,255,255,0.08)' } }
+      }
+    }
+  });
+}
+
+// กราฟ 2: Doughnut Chart สัดส่วนแยกสาขา
+function renderBranchShareChart(validBookings, targetYear) {
+  const canvas = document.getElementById('branchShareChart');
+  if (!canvas) return;
+
+  const counts = { 'สาย 3': 0, 'บางแค': 0, 'นนทบุรี': 0, 'หนองแขม': 0 };
+
+  validBookings.forEach(item => {
+    if (!item.date || item.date.length < 4) return;
+    const y = parseInt(item.date.substring(0, 4));
+    if (y === targetYear && counts[item.branch] !== undefined) {
+      counts[item.branch]++;
+    }
+  });
+
+  const labels = Object.keys(counts);
+  const dataValues = Object.values(counts);
+  const bgColors = ['#1a73e8', '#e67c00', '#0f9d58', '#7b1fa2'];
+
+  if (branchShareChartInstance) branchShareChartInstance.destroy();
+
+  branchShareChartInstance = new Chart(canvas, {
+    type: 'doughnut',
+    data: {
+      labels: labels,
+      datasets: [{
+        data: dataValues,
+        backgroundColor: bgColors,
+        borderWidth: 2,
+        borderColor: '#1e293b'
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { color: '#e2e8f0', font: { size: 12 } } }
+      }
+    }
+  });
+}
+
+// กราฟ 3: แท่งสถิติจองแยก 12 รอบเวลา
+function renderTimeSlotsChart(validBookings, targetYear) {
+  const canvas = document.getElementById('timeSlotsChart');
+  if (!canvas) return;
+
+  const slots = ['08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30', '13:00', '13:30', '14:00'];
+  const slotCounts = new Array(12).fill(0);
+
+  validBookings.forEach(item => {
+    if (!item.date || item.date.length < 4) return;
+    const y = parseInt(item.date.substring(0, 4));
+    if (y === targetYear) {
+      const t = item.time ? item.time.substring(0, 5) : '';
+      const idx = slots.indexOf(t);
+      if (idx !== -1) slotCounts[idx]++;
+    }
+  });
+
+  if (timeSlotsChartInstance) timeSlotsChartInstance.destroy();
+
+  timeSlotsChartInstance = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: slots,
+      datasets: [{
+        label: 'จำนวนคิวจอง',
+        data: slotCounts,
+        backgroundColor: 'rgba(6, 185, 80, 0.7)',
+        borderColor: '#06b950',
+        borderWidth: 1,
+        borderRadius: 4
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false }
+      },
+      scales: {
+        x: { ticks: { color: '#9ca3af', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#9ca3af', precision: 0 }, grid: { color: 'rgba(255,255,255,0.08)' } }
+      }
+    }
+  });
 }

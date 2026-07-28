@@ -340,6 +340,131 @@
       color: #4ade80;
     }
     
+    /* Analytics Styles */
+    .analytics-kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+    }
+    .kpi-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 18px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .kpi-content {
+      display: flex;
+      flex-direction: column;
+    }
+    .kpi-label {
+      font-size: 0.8rem;
+      color: var(--gray);
+      font-weight: 500;
+    }
+    .kpi-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--white);
+      line-height: 1.2;
+      margin: 2px 0;
+    }
+    .kpi-sub {
+      font-size: 0.76rem;
+      color: var(--gray);
+    }
+    .analytics-section-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .analytics-card-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .analytics-card-title h3 {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--white);
+      margin: 0;
+    }
+    .chart-legend-custom {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      font-size: 0.8rem;
+      color: var(--gray);
+    }
+    .lg-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .lg-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+    .utilization-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .util-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 8px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .util-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--white);
+    }
+    .util-pct {
+      font-size: 0.85rem;
+      font-weight: 700;
+    }
+    .util-bar-bg {
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 99px;
+      height: 6px;
+      overflow: hidden;
+    }
+    .util-bar-fill {
+      height: 100%;
+      border-radius: 99px;
+      transition: width 0.6s ease;
+    }
+    .analytics-charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 20px;
+    }
+    
     /* FullCalendar custom styling */
     .fc-theme-standard td, .fc-theme-standard th, .fc-theme-standard .fc-scrollgrid {
       border-color: #e2e8f0;
@@ -482,6 +607,7 @@
     }
   </style>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
   <div class="background-decor">
@@ -532,6 +658,7 @@
         <div class="nav-tabs">
           <button class="tab-link active" id="btnTabList" onclick="switchView('list')"><i class="fa-solid fa-list"></i> ตารางคิว</button>
           <button class="tab-link" id="btnTabCalendar" onclick="switchView('calendar')"><i class="fa-solid fa-calendar-days"></i> ปฏิทินแบบเต็ม</button>
+          <button class="tab-link" id="btnTabAnalytics" onclick="switchView('analytics')"><i class="fa-solid fa-chart-pie"></i> วิเคราะห์ข้อมูล</button>
         </div>
 
         <!-- LINE Quota Section -->
@@ -625,6 +752,111 @@
           </div>
 
           <div id="calendar"></div>
+        </div>
+
+        <!-- Data Analysis View -->
+        <div id="analyticsViewContainer" class="hidden" style="margin-top: 20px;">
+          
+          <!-- Filter Bar -->
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; background: rgba(255,255,255,0.02); padding: 14px 18px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="font-weight: 600; font-size: 0.95rem; color: var(--white);"><i class="fa-solid fa-calendar" style="color: #06b950;"></i> เลือกปีสรุปสถิติ:</span>
+              <select id="analyticsYearFilter" onchange="updateAnalytics()" class="filter-select" style="min-width: 120px;">
+                <!-- Populated dynamically -->
+              </select>
+            </div>
+            <div style="font-size: 0.82rem; color: var(--gray);">
+              <i class="fa-solid fa-arrows-rotate"></i> อัปเดตข้อมูลอัตโนมัติจากระบบหลังบ้าน
+            </div>
+          </div>
+
+          <!-- KPI Metric Cards -->
+          <div class="analytics-kpi-grid">
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: rgba(59,130,246,0.15); color: #60a5fa;"><i class="fa-solid fa-car"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">ยอดจองรวมทั้งหมด</span>
+                <div class="kpi-value" id="kpiTotalBookings">0</div>
+                <span class="kpi-sub" id="kpiTotalSub">คิวสะสมในระบบ</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: rgba(16,185,129,0.15); color: #34d399;"><i class="fa-solid fa-chart-line"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">ยอดจองเดือนนี้</span>
+                <div class="kpi-value" id="kpiMonthBookings">0</div>
+                <span class="kpi-sub" id="kpiMomGrowth">--</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: rgba(245,158,11,0.15); color: #fbbf24;"><i class="fa-solid fa-trophy"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">สาขาอันดับ 1 (เดือนนี้)</span>
+                <div class="kpi-value" id="kpiTopBranch" style="font-size: 1.25rem;">--</div>
+                <span class="kpi-sub" id="kpiTopBranchSub">-- คิว</span>
+              </div>
+            </div>
+
+            <div class="kpi-card">
+              <div class="kpi-icon" style="background: rgba(168,85,247,0.15); color: #c084fc;"><i class="fa-solid fa-clock"></i></div>
+              <div class="kpi-content">
+                <span class="kpi-label">ช่วงเวลายอดฮิต</span>
+                <div class="kpi-value" id="kpiPeakTime">--</div>
+                <span class="kpi-sub" id="kpiPeakTimeSub">-- คิว</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Capacity Utilization Section -->
+          <div class="analytics-section-card" style="margin-top: 20px;">
+            <div class="analytics-card-title">
+              <h3>⚡ อัตราความหนาแน่นคิวจองเดือนนี้ (Capacity Utilization Rate %)</h3>
+              <span style="font-size: 0.8rem; color: var(--gray);">คำนวณจากคิวจริงเทียบความจุสูงสุด (12 รอบ/วัน)</span>
+            </div>
+            <div class="utilization-grid" id="utilizationGrid">
+              <!-- Rendered dynamically -->
+            </div>
+          </div>
+
+          <!-- Charts Row 1: Monthly Branch Comparison Chart (4 Colors) -->
+          <div class="analytics-section-card" style="margin-top: 20px;">
+            <div class="analytics-card-title">
+              <h3>📊 สรุปยอดจองรายเดือน แยกตามสาขา (4 สี)</h3>
+              <div class="chart-legend-custom">
+                <span class="lg-item"><span class="lg-dot" style="background: #1a73e8;"></span> สาย 3</span>
+                <span class="lg-item"><span class="lg-dot" style="background: #e67c00;"></span> บางแค</span>
+                <span class="lg-item"><span class="lg-dot" style="background: #0f9d58;"></span> นนทบุรี</span>
+                <span class="lg-item"><span class="lg-dot" style="background: #7b1fa2;"></span> หนองแขม</span>
+              </div>
+            </div>
+            <div class="chart-canvas-wrapper" style="position: relative; height: 320px; width: 100%;">
+              <canvas id="monthlyBranchChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Charts Row 2: Doughnut & Time Slots -->
+          <div class="analytics-charts-grid" style="margin-top: 20px;">
+            <div class="analytics-section-card">
+              <div class="analytics-card-title">
+                <h3>🍕 สัดส่วนยอดจองรวมแยกสาขา</h3>
+              </div>
+              <div class="chart-canvas-wrapper" style="position: relative; height: 260px; width: 100%;">
+                <canvas id="branchShareChart"></canvas>
+              </div>
+            </div>
+
+            <div class="analytics-section-card">
+              <div class="analytics-card-title">
+                <h3>⏰ สถิติจองแยกตามรอบเวลา (12 รอบ)</h3>
+              </div>
+              <div class="chart-canvas-wrapper" style="position: relative; height: 260px; width: 100%;">
+                <canvas id="timeSlotsChart"></canvas>
+              </div>
+            </div>
+          </div>
+
         </div>
 
       </div>
