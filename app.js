@@ -146,16 +146,31 @@ function renderTimeSlots(queueData) {
     const timeLabel = document.createElement("label");
     timeLabel.className = "time-slot";
     
-    const isFull = queueCount >= 3; // กำหนดว่าคิวเต็มที่ 3 คิวต่อรอบเวลาต่อสาขา (สามารถเปลี่ยนจำนวนได้)
+    const isFull = queueCount >= 3; // กำหนดว่าคิวเต็มที่ 3 คิวต่อรอบเวลาต่อสาขา
+    
+    let statusText = "";
+    let statusClass = "status-green";
+    
     if (isFull) {
       timeLabel.classList.add("full");
+      statusText = "คิวเต็มแล้ว";
+      statusClass = "status-red";
+    } else if (queueCount === 0) {
+      statusText = "คิวว่างชัวร์";
+      statusClass = "status-green";
+    } else if (queueCount === 1) {
+      statusText = "ว่าง (จอง 1)";
+      statusClass = "status-yellow";
+    } else if (queueCount === 2) {
+      statusText = "เหลือ 1 ที่ด่วน";
+      statusClass = "status-orange";
     }
 
     timeLabel.innerHTML = `
       <input type="radio" name="bookingTime" value="${time}" required ${isFull ? 'disabled' : ''}>
       <div class="time-slot-content">
         <span class="time-title">${time} น.</span>
-        <span class="time-status">${isFull ? 'คิวเต็มแล้ว' : `จองแล้ว ${queueCount} คิว`}</span>
+        <span class="time-status ${statusClass}">${statusText}</span>
       </div>
     `;
 

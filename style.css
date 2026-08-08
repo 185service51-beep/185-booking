@@ -278,6 +278,49 @@ input, textarea, button, select {
   box-shadow: inset 0 0 20px rgba(225,29,41,0.05), 0 4px 20px rgba(0,0,0,0.2);
 }
 
+/* Promotional Badge */
+.promo-badge {
+  position: absolute;
+  top: -10px;
+  left: 12px;
+  background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%);
+  color: #0a0a0a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 3px 9px;
+  border-radius: 99px;
+  box-shadow: 0 0 10px rgba(0, 242, 254, 0.6);
+  letter-spacing: 0.5px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: pulse-glow 2s infinite alternate;
+}
+
+/* Nongkham Glowing Card style */
+.branch-nongkham-promo .branch-card-content {
+  border: 1px solid rgba(0, 242, 254, 0.35) !important;
+  box-shadow: 0 0 12px rgba(0, 242, 254, 0.12);
+  animation: border-pulse 3s infinite alternate;
+}
+
+.branch-nongkham-promo input[type="radio"]:checked + .branch-card-content {
+  border-color: #00f2fe !important;
+  background: rgba(0, 242, 254, 0.1) !important;
+  box-shadow: inset 0 0 20px rgba(0, 242, 254, 0.1), 0 0 25px rgba(0, 242, 254, 0.35) !important;
+}
+
+@keyframes pulse-glow {
+  0% { transform: scale(1); box-shadow: 0 0 5px rgba(0, 242, 254, 0.4); }
+  100% { transform: scale(1.04); box-shadow: 0 0 12px rgba(0, 242, 254, 0.8); }
+}
+
+@keyframes border-pulse {
+  0% { border-color: rgba(0, 242, 254, 0.25); box-shadow: 0 0 8px rgba(0, 242, 254, 0.08); }
+  100% { border-color: rgba(0, 242, 254, 0.6); box-shadow: 0 0 18px rgba(0, 242, 254, 0.25); }
+}
+
 .branch-check {
   position: absolute;
   top: 12px;
@@ -489,9 +532,22 @@ input, textarea, button, select {
 
 .time-status {
   font-size: 0.75rem;
-  color: #4ade80;
   font-weight: 400;
   letter-spacing: 0.5px;
+}
+
+/* Dynamic status colors */
+.time-status.status-green {
+  color: #4ade80; /* เขียว */
+}
+.time-status.status-yellow {
+  color: #fef08a; /* เหลือง */
+}
+.time-status.status-orange {
+  color: #f97316; /* ส้ม */
+}
+.time-status.status-red {
+  color: #f87171; /* แดง */
 }
 
 .time-slot.full .time-slot-content {
