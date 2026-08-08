@@ -139,6 +139,10 @@ function renderTimeSlots(queueData) {
   timeGrid.classList.remove("hidden");
 
   TIME_SLOTS.forEach(time => {
+    // ข้ามรอบเวลา 08:30 สำหรับสาขานนทบุรี
+    if (time === "08:30" && selectedBranchStr === "นนทบุรี") {
+      return;
+    }
     // นับจำนวนคิวที่ถูกจองไปแล้ว
     const queueCount = queueData[time] || 0;
     
