@@ -397,6 +397,7 @@ input, textarea, button, select {
 }
 
 .date-card {
+  position: relative;
   flex: 0 0 auto;
   width: 72px;
   height: 88px;
@@ -1012,5 +1013,132 @@ input, textarea, button, select {
 @keyframes fill {
   100% {
     box-shadow: inset 0px 0px 0px 40px #e11d29;
+  }
+}
+
+/* ─── Tuesday Promotion Styles ──────────────── */
+
+/* Sticky Promo Banner */
+.promo-banner {
+  background: rgba(225, 29, 41, 0.08);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(225, 29, 41, 0.25);
+  border-radius: var(--radius-sm);
+  padding: 12px 18px;
+  margin: 20px 20px 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 4px 20px rgba(225, 29, 41, 0.15);
+  animation: glow-pulse-red 3s infinite alternate;
+}
+
+.promo-banner-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.promo-banner-badge {
+  background: var(--red);
+  color: var(--white);
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 4px;
+  width: fit-content;
+  letter-spacing: 0.5px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.promo-banner-text {
+  font-size: 0.85rem;
+  color: var(--white-dim);
+  line-height: 1.4;
+}
+
+.promo-banner-text strong {
+  color: #ffda79;
+}
+
+.promo-banner-btn {
+  background: linear-gradient(135deg, var(--red) 0%, #ff4a5a 100%);
+  color: var(--white);
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-pill);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+  box-shadow: 0 0 10px rgba(225, 29, 41, 0.4);
+}
+
+.promo-banner-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0 15px rgba(225, 29, 41, 0.7);
+}
+
+/* Date Roller Promo Tag */
+.date-card.promo-date {
+  border-color: rgba(225, 29, 41, 0.4) !important;
+}
+
+.date-card.promo-date.selected {
+  border-color: var(--red) !important;
+  box-shadow: 0 0 15px var(--red-glow) !important;
+}
+
+.date-promo-tag {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, var(--red) 0%, #ff4a5a 100%);
+  color: var(--white);
+  font-size: 0.62rem;
+  font-weight: 700;
+  padding: 1px 6px;
+  border-radius: 99px;
+  white-space: nowrap;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  z-index: 5;
+}
+
+/* Pulse Highlight Animation for date roller click */
+.pulse-highlight {
+  animation: pulse-border 1.5s ease-in-out;
+}
+
+@keyframes pulse-border {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 41, 0.7); }
+  50% { transform: scale(1.08); box-shadow: 0 0 0 12px rgba(225, 29, 41, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(225, 29, 41, 0); }
+}
+
+@keyframes glow-pulse-red {
+  0% { border-color: rgba(225, 29, 41, 0.25); box-shadow: 0 4px 15px rgba(225, 29, 41, 0.1); }
+  100% { border-color: rgba(225, 29, 41, 0.5); box-shadow: 0 4px 25px rgba(225, 29, 41, 0.3); }
+}
+
+@media (max-width: 768px) {
+  .promo-banner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px;
+    margin: 15px 15px 0 15px;
+  }
+  .promo-banner-btn {
+    width: 100%;
+    justify-content: center;
   }
 }

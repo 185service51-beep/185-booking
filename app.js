@@ -1,5 +1,8 @@
 // 185Service Booking System - Client JavaScript
 
+// ⚠️ คอนฟิกเปิด-ปิดโปรโมชั่นวันอังคาร (เปลี่ยนเป็น false เมื่อหมดโปรโมชั่น)
+const PROMO_ACTIVE = true;
+
 // ⚠️ ให้ผู้ใช้ก๊อปปี้ URL ของ Google Apps Script Web App ที่ Deploy เสร็จแล้วมาใส่ที่นี่
 const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzXkq_P31Exsqp4LCCLRwiRb2gPZgIG-g4aFlxgx_mGm_JHHCvzRfV06-up810e0APw/exec"; 
 
@@ -12,6 +15,12 @@ let selectedBranchStr = "สาย 3";
 
 // โหลดระบบหลังจากเอกสารโหลดเสร็จ
 document.addEventListener("DOMContentLoaded", () => {
+  // ควบคุมการแสดงผลแบนเนอร์โปรโมชั่นตามการตั้งค่า
+  const promoBanner = document.getElementById("promoBanner");
+  if (promoBanner) {
+    promoBanner.style.display = PROMO_ACTIVE ? "flex" : "none";
+  }
+
   // สร้างวันที่ล่วงหน้าแบบเลื่อนแนวนอน
   generateDateRoller();
 
@@ -60,11 +69,15 @@ function generateDateRoller() {
     const dateNum = d.getDate();
     const monthName = monthNames[d.getMonth()];
     
+    const isTuesdayPromo = PROMO_ACTIVE && (d.getDay() === 2 && d.getMonth() >= 8 && d.getMonth() <= 10);
+    
     const card = document.createElement('div');
     card.className = 'date-card';
     if (i === 0) card.classList.add('today');
+    if (isTuesdayPromo) card.classList.add('promo-date');
     
     card.innerHTML = `
+      ${isTuesdayPromo ? '<div class="date-promo-tag">โปร 499.-</div>' : ''}
       <div class="date-day">${i === 0 ? 'วันนี้' : dayName}</div>
       <div class="date-num">${dateNum}</div>
       <div class="date-month">${monthName}</div>
@@ -382,4 +395,26 @@ function initParticles() {
   }
   
   animate();
+}
+
+// เลื่อนหน้าจอไปที่แถบเลือกวันที่แบบสมูท พร้อมไฮไลต์วันอังคารที่มีโปรโมชั่นที่ใกล้ที่สุด
+function scrollToDateRoller() {
+  const roller = document.getElementById('dateRoller');
+  if (roller) {
+    roller.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    // ค้นหาการ์ดวันที่แรกที่เป็นวันอังคารโปรโมชั่น
+    const firstPromoCard = roller.querySelector('.date-card.promo-date');
+    if (firstPromoCard) {
+      setTimeout(() => {
+        firstPromoCard.click();
+        
+        // เพิ่มเอฟเฟกต์แอนิเมชันกะพริบแจ้งเตือนชั่วคราว
+        firstPromoCard.classList.add('pulse-highlight');
+        setTimeout(() => {
+          firstPromoCard.classList.remove('pulse-highlight');
+        }, 1500);
+      }, 600); // รอจังหวะหน้าจอเลื่อนสมูทเสร็จสิ้น
+    }
+  }
 }
