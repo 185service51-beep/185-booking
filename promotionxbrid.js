@@ -210,8 +210,10 @@ function renderRecordsList(records) {
     const formattedPrice = Number(item.value || item.productValue || 0).toLocaleString();
     const branchName = item.branch || "สาย 3";
     const dateStr = item.date || "--";
-    const name = item.name || item.customerName || "ไม่ระบุชื่อ";
-    const phone = item.phone || item.customerPhone || "";
+    const rawName = item.name || item.customerName || "";
+    const rawPhone = item.phone || item.customerPhone || "";
+    const name = maskName(rawName);
+    const phone = maskPhone(rawPhone);
     const notes = item.notes ? `(${item.notes})` : "";
 
     html += `
@@ -232,6 +234,39 @@ function renderRecordsList(records) {
   });
 
   listEl.innerHTML = html;
+}
+
+// ฟังก์ชันเซนเซอร์ชื่อลูกค้า (Mask Name) เพื่อความปลอดภัย
+function maskName(name) {
+  if (!name || typeof name !== 'string') return "ไม่ระบุชื่อ";
+  const trimmed = name.trim();
+  const parts = trimmed.split(/\s+/);
+  
+  if (parts.length >= 2) {
+    // ถ้ามีชื่อและนามสกุล: แสดงชื่อจริง และเซนเซอร์นามสกุล เช่น "สมชาย ใ***"
+    const firstName = parts[0];
+    const lastName = parts.slice(1).join(" ");
+    const maskedLastName = lastName.length > 1 ? lastName.substring(0, 1) + "***" : "***";
+    return `${firstName} ${maskedLastName}`;
+  } else {
+    // ถ้ามีคำเดียว: เซนเซอร์ครึ่งหลัง เช่น "สมช***"
+    if (trimmed.length <= 3) return trimmed.substring(0, 1) + "***";
+    return trimmed.substring(0, 3) + "***";
+  }
+}
+
+// ฟังก์ชันเซนเซอร์เบอร์โทรศัพท์ (Mask Phone) เช่น 089-XXX-4567
+function maskPhone(phone) {
+  if (!phone) return "";
+  const clean = phone.toString().replace(/[^0-9]/g, '');
+  if (clean.length === 10) {
+    return clean.substring(0, 3) + "-XXX-" + clean.substring(6);
+  } else if (clean.length === 9) {
+    return clean.substring(0, 2) + "-XXX-" + clean.substring(5);
+  } else if (clean.length > 4) {
+    return clean.substring(0, 3) + "***" + clean.substring(clean.length - 2);
+  }
+  return phone;
 }
 
 // อัปเดตตัวเลขนับสถิติ
