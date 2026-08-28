@@ -1,0 +1,1 @@
+﻿{\n  "cleanUrls": true,\n  "rewrites": [\n    { "source": "/promotionxbrid", "destination": "/promotionxbrid.html" }\n  ]\n}

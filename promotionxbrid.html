@@ -1,0 +1,806 @@
+﻿<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>บันทึกแจก Gift Card Lotus's 100.- | 185Service x Bridgestone</title>
+  <meta name="description" content="ระบบบันทึกข้อมูลลูกค้าที่ได้รับบัตรของขวัญโลตัส 100 บาท เมื่อเปลี่ยนสายน้ำยาแอร์ Bridgestone">
+  <meta name="theme-color" content="#0a0a0a">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --bg: #0a0a0a;
+      --card-bg: rgba(22, 22, 24, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --red: #e11d29;
+      --red-glow: rgba(225, 29, 41, 0.35);
+      --lotus-green: #008751;
+      --lotus-glow: rgba(0, 135, 81, 0.3);
+      --text: #f4f4f6;
+      --text-dim: #9ca3af;
+      --radius: 16px;
+      --radius-sm: 10px;
+      --transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Sarabun', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 20px 14px 40px;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    /* Ambient Background Glow */
+    .bg-decor {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      overflow: hidden;
+    }
+    .glow-1 {
+      position: absolute;
+      width: 450px;
+      height: 450px;
+      top: -100px;
+      left: -100px;
+      background: radial-gradient(circle, rgba(225, 29, 41, 0.18) 0%, transparent 70%);
+      filter: blur(50px);
+    }
+    .glow-2 {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      bottom: -100px;
+      right: -100px;
+      background: radial-gradient(circle, rgba(0, 135, 81, 0.14) 0%, transparent 70%);
+      filter: blur(60px);
+    }
+
+    .container {
+      width: 100%;
+      max-width: 580px;
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Header */
+    .header {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 22px 20px;
+      text-align: center;
+      position: relative;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .brand-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 12px;
+      border-radius: 99px;
+      font-size: 0.8rem;
+      color: var(--text-dim);
+      margin-bottom: 12px;
+    }
+    .brand-bar span.highlight {
+      color: #ffda79;
+      font-weight: 700;
+    }
+
+    .gift-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, #008751 0%, #00b36b 100%);
+      color: #fff;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 6px 14px;
+      border-radius: 99px;
+      box-shadow: 0 0 16px var(--lotus-glow);
+      margin-bottom: 10px;
+    }
+
+    .header h1 {
+      font-family: 'Outfit', 'Sarabun', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+    .header h1 span {
+      color: var(--red);
+    }
+
+    .header p {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+    }
+
+    /* Stats Row */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .stat-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      flex-shrink: 0;
+    }
+    .stat-icon.green {
+      background: rgba(0, 135, 81, 0.15);
+      color: #34d399;
+    }
+    .stat-icon.red {
+      background: rgba(225, 29, 41, 0.15);
+      color: #f87171;
+    }
+    .stat-info {
+      display: flex;
+      flex-direction: column;
+    }
+    .stat-label {
+      font-size: 0.76rem;
+      color: var(--text-dim);
+    }
+    .stat-value {
+      font-size: 1.4rem;
+      font-weight: 700;
+      font-family: 'Outfit', sans-serif;
+      color: #fff;
+    }
+
+    /* Main Form */
+    .form-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .form-section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    }
+    .form-section-title i {
+      color: var(--red);
+    }
+
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+    .form-group label span.req {
+      color: var(--red);
+    }
+
+    /* Branch Radio Buttons */
+    .branch-selector {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .branch-option {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .branch-option input {
+      position: absolute;
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .branch-option-box {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 12px 10px;
+      text-align: center;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-dim);
+    }
+
+    .branch-option:hover .branch-option-box {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.2);
+      color: #fff;
+    }
+
+    .branch-option input:checked + .branch-option-box {
+      background: rgba(225, 29, 41, 0.12);
+      border-color: var(--red);
+      color: #fff;
+      font-weight: 600;
+      box-shadow: 0 0 14px var(--red-glow);
+    }
+
+    .branch-option input:checked + .branch-option-box i {
+      color: var(--red);
+    }
+
+    /* Inputs */
+    .input-wrapper {
+      position: relative;
+      display: flex;
+      align-items: center;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      color: var(--text-dim);
+      font-size: 0.95rem;
+      pointer-events: none;
+      transition: color var(--transition);
+    }
+
+    .form-input {
+      width: 100%;
+      height: 48px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius-sm);
+      padding: 0 14px 0 42px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      color: #fff;
+      transition: var(--transition);
+      outline: none;
+    }
+
+    .form-input:focus {
+      background: rgba(255, 255, 255, 0.07);
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(225, 29, 41, 0.15);
+    }
+
+    .form-input:focus ~ .input-icon {
+      color: var(--red);
+    }
+
+    .form-input::placeholder {
+      color: rgba(255, 255, 255, 0.25);
+    }
+
+    /* Price Quick Chips */
+    .price-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .price-chip {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--card-border);
+      border-radius: 99px;
+      padding: 4px 10px;
+      font-size: 0.76rem;
+      color: var(--text-dim);
+      cursor: pointer;
+      transition: var(--transition);
+    }
+
+    .price-chip:hover {
+      background: rgba(225, 29, 41, 0.1);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    .price-chip.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    /* Submit Button */
+    .btn-submit {
+      width: 100%;
+      height: 52px;
+      background: linear-gradient(135deg, var(--red) 0%, #ff4a5a 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      box-shadow: 0 6px 20px rgba(225, 29, 41, 0.4);
+      transition: var(--transition);
+      margin-top: 24px;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(225, 29, 41, 0.6);
+    }
+
+    .btn-submit:active:not(:disabled) {
+      transform: scale(0.98);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+
+    /* Status Message Banner */
+    .msg-banner {
+      padding: 12px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 0.88rem;
+      display: none;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      animation: fadeIn 0.3s ease-out;
+    }
+    .msg-banner.success {
+      display: flex;
+      background: rgba(0, 135, 81, 0.15);
+      border: 1px solid rgba(0, 135, 81, 0.4);
+      color: #34d399;
+    }
+    .msg-banner.error {
+      display: flex;
+      background: rgba(225, 29, 41, 0.15);
+      border: 1px solid rgba(225, 29, 41, 0.4);
+      color: #f87171;
+    }
+
+    /* Recent Records Drawer */
+    .recent-section {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+    }
+
+    .recent-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    .recent-header h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .btn-refresh {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text-dim);
+      border-radius: 99px;
+      padding: 4px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      transition: var(--transition);
+    }
+    .btn-refresh:hover {
+      color: #fff;
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    .recent-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-height: 260px;
+      overflow-y: auto;
+    }
+    .recent-list::-webkit-scrollbar {
+      width: 4px;
+    }
+    .recent-list::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 4px;
+    }
+
+    .recent-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: var(--radius-sm);
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.85rem;
+      transition: var(--transition);
+    }
+    .recent-item:hover {
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+    .recent-item-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .recent-item-name {
+      font-weight: 600;
+      color: #fff;
+    }
+    .recent-item-sub {
+      font-size: 0.75rem;
+      color: var(--text-dim);
+      display: flex;
+      gap: 8px;
+    }
+    .recent-item-price {
+      font-family: 'Outfit', sans-serif;
+      font-weight: 700;
+      color: #34d399;
+      font-size: 0.95rem;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 20px 10px;
+      color: var(--text-dim);
+      font-size: 0.85rem;
+    }
+
+    /* Modal Popup */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      animation: fadeIn 0.25s ease-out;
+    }
+    .modal-overlay.active {
+      display: flex;
+    }
+    .modal-card {
+      width: 100%;
+      max-width: 400px;
+      background: #141416;
+      border: 1px solid rgba(0, 135, 81, 0.4);
+      border-radius: var(--radius);
+      padding: 28px 22px;
+      text-align: center;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+      position: relative;
+      animation: scaleUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .modal-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: rgba(0, 135, 81, 0.15);
+      border: 2px solid #008751;
+      color: #34d399;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 16px;
+      box-shadow: 0 0 20px var(--lotus-glow);
+    }
+    .modal-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 6px;
+    }
+    .modal-desc {
+      font-size: 0.88rem;
+      color: var(--text-dim);
+      margin-bottom: 20px;
+      line-height: 1.5;
+    }
+    .modal-card-summary {
+      background: rgba(255, 255, 255, 0.04);
+      border-radius: var(--radius-sm);
+      padding: 12px;
+      margin-bottom: 20px;
+      text-align: left;
+      font-size: 0.85rem;
+    }
+    .modal-card-summary div {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 4px;
+    }
+    .modal-card-summary div:last-child {
+      margin-bottom: 0;
+    }
+    .modal-card-summary span.val {
+      font-weight: 600;
+      color: #fff;
+    }
+    .btn-modal {
+      width: 100%;
+      height: 46px;
+      background: linear-gradient(135deg, #008751 0%, #00b36b 100%);
+      color: #fff;
+      border: none;
+      border-radius: var(--radius-sm);
+      font-family: inherit;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 15px var(--lotus-glow);
+      transition: var(--transition);
+    }
+    .btn-modal:hover {
+      transform: translateY(-1px);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleUp {
+      from { opacity: 0; transform: scale(0.9); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-decor">
+    <div class="glow-1"></div>
+    <div class="glow-2"></div>
+  </div>
+
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="brand-bar">
+        <i class="fa-solid fa-wrench" style="color: var(--red);"></i> 185Service <span class="highlight">x Bridgestone</span>
+      </div>
+      <div>
+        <span class="gift-badge"><i class="fa-solid fa-gift"></i> Lotus's Gift Card 100.-</span>
+      </div>
+      <h1>บันทึกแจก <span>Gift Card โลตัส</span></h1>
+      <p>เอกสารบันทึกข้อมูลลูกค้าเมื่อเปลี่ยนสายน้ำยาแอร์ Bridgestone</p>
+    </header>
+
+    <!-- Stats -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon green"><i class="fa-solid fa-gift"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">แจกวันนี้ (บัตร)</span>
+          <span class="stat-value" id="todayCount">0</span>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon red"><i class="fa-solid fa-layer-group"></i></div>
+        <div class="stat-info">
+          <span class="stat-label">แจกสะสมทั้งหมด (บัตร)</span>
+          <span class="stat-value" id="totalCount">0</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Entry Form -->
+    <main class="form-card">
+      <form id="promoForm" onsubmit="handleSubmit(event)">
+        
+        <!-- 1. สาขา -->
+        <div class="form-group">
+          <label><i class="fa-solid fa-location-dot" style="color: var(--red);"></i> สาขาที่ให้บริการ / แจกบัตร <span class="req">*</span></label>
+          <div class="branch-selector">
+            <label class="branch-option">
+              <input type="radio" name="branch" value="สาย 3" checked onchange="saveBranchPreference('สาย 3')">
+              <div class="branch-option-box">
+                <i class="fa-solid fa-shop"></i> สาขาสาย 3
+              </div>
+            </label>
+            <label class="branch-option">
+              <input type="radio" name="branch" value="บางแค" onchange="saveBranchPreference('บางแค')">
+              <div class="branch-option-box">
+                <i class="fa-solid fa-shop"></i> สาขาบางแค
+              </div>
+            </label>
+            <label class="branch-option">
+              <input type="radio" name="branch" value="นนทบุรี" onchange="saveBranchPreference('นนทบุรี')">
+              <div class="branch-option-box">
+                <i class="fa-solid fa-shop"></i> สาขานนทบุรี
+              </div>
+            </label>
+            <label class="branch-option">
+              <input type="radio" name="branch" value="หนองแขม" onchange="saveBranchPreference('หนองแขม')">
+              <div class="branch-option-box">
+                <i class="fa-solid fa-shop"></i> สาขาหนองแขม
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- 2. วันที่ -->
+        <div class="form-group">
+          <label for="entryDate"><i class="fa-regular fa-calendar-days" style="color: var(--red);"></i> วัน/เดือน/ปี ที่ทำรายการ <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <input type="date" id="entryDate" name="entryDate" required class="form-input">
+            <i class="fa-regular fa-calendar input-icon"></i>
+          </div>
+        </div>
+
+        <!-- 3. ชื่อ-นามสกุล -->
+        <div class="form-group">
+          <label for="customerName"><i class="fa-solid fa-user" style="color: var(--red);"></i> ชื่อ-นามสกุล ลูกค้า <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <input type="text" id="customerName" name="customerName" required placeholder="เช่น คุณสมชาย ใจดี" class="form-input">
+            <i class="fa-solid fa-user input-icon"></i>
+          </div>
+        </div>
+
+        <!-- 4. เบอร์โทร -->
+        <div class="form-group">
+          <label for="customerPhone"><i class="fa-solid fa-phone" style="color: var(--red);"></i> เบอร์โทรศัพท์ลูกค้า <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <input type="tel" id="customerPhone" name="customerPhone" required placeholder="เช่น 0891234567" inputmode="numeric" pattern="[0-9]{9,10}" class="form-input">
+            <i class="fa-solid fa-phone input-icon"></i>
+          </div>
+        </div>
+
+        <!-- 5. มูลค่าสินค้าสายน้ำยาแอร์ -->
+        <div class="form-group">
+          <label for="productValue"><i class="fa-solid fa-tag" style="color: var(--red);"></i> มูลค่าสินค้าสายน้ำยาแอร์ Bridgestone (บาท) <span class="req">*</span></label>
+          <div class="input-wrapper">
+            <input type="number" id="productValue" name="productValue" required placeholder="เช่น 1200" step="any" min="0" class="form-input">
+            <i class="fa-solid fa-baht-sign input-icon"></i>
+          </div>
+          <div class="price-chips">
+            <span class="price-chip" onclick="setProductPrice(599)">599.-</span>
+            <span class="price-chip" onclick="setProductPrice(990)">990.-</span>
+            <span class="price-chip" onclick="setProductPrice(1200)">1,200.-</span>
+            <span class="price-chip" onclick="setProductPrice(1500)">1,500.-</span>
+            <span class="price-chip" onclick="setProductPrice(2000)">2,000.-</span>
+          </div>
+        </div>
+
+        <!-- 6. หมายเหตุ / ทะเบียนรถ (Optional) -->
+        <div class="form-group" style="margin-bottom: 0;">
+          <label for="notes"><i class="fa-solid fa-car" style="color: var(--red);"></i> ทะเบียนรถ / หมายเหตุเพิ่มเติม (ถ้ามี)</label>
+          <div class="input-wrapper">
+            <input type="text" id="notes" name="notes" placeholder="เช่น กข 1234 กทม." class="form-input">
+            <i class="fa-solid fa-comment-dots input-icon"></i>
+          </div>
+        </div>
+
+        <!-- Status Message Banner -->
+        <div id="msgBanner" class="msg-banner">
+          <i class="fa-solid fa-circle-check"></i>
+          <span id="msgText">บันทึกข้อมูลเรียบร้อยแล้ว</span>
+        </div>
+
+        <!-- Submit Button -->
+        <button type="submit" id="btnSubmit" class="btn-submit">
+          <i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลแจก Gift Card
+        </button>
+
+      </form>
+    </main>
+
+    <!-- Recent Records Section -->
+    <section class="recent-section">
+      <div class="recent-header">
+        <h3><i class="fa-solid fa-clock-rotate-left" style="color: #34d399;"></i> รายการบันทึกล่าสุด</h3>
+        <button type="button" class="btn-refresh" onclick="loadRecentRecords()">
+          <i class="fa-solid fa-rotate-right" id="refreshIcon"></i> รีเฟรช
+        </button>
+      </div>
+
+      <div class="recent-list" id="recentList">
+        <div class="empty-state">
+          <i class="fa-solid fa-circle-notch fa-spin"></i> กำลังโหลดรายการ...
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Success Modal Popup -->
+  <div class="modal-overlay" id="successModal">
+    <div class="modal-card">
+      <div class="modal-icon"><i class="fa-solid fa-gift"></i></div>
+      <h2 class="modal-title">บันทึกสำเร็จเรียบร้อย!</h2>
+      <p class="modal-desc">ข้อมูลถูกบันทึกลง Google Sheet พร้อมนับสถิติการแจก Gift Card Lotus's 100.- เรียบร้อยแล้ว</p>
+      
+      <div class="modal-card-summary">
+        <div><span style="color: var(--text-dim);">ลูกค้า:</span> <span class="val" id="mCust">--</span></div>
+        <div><span style="color: var(--text-dim);">สาขา:</span> <span class="val" id="mBranch">--</span></div>
+        <div><span style="color: var(--text-dim);">ยอดสายน้ำยาแอร์:</span> <span class="val" id="mPrice">-- บาท</span></div>
+      </div>
+
+      <button type="button" class="btn-modal" onclick="closeModalAndReset()">
+        <i class="fa-solid fa-plus"></i> บันทึกรายการถัดไป
+      </button>
+    </div>
+  </div>
+
+  <script src="promotionxbrid.js"></script>
+</body>
+</html>
