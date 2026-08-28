@@ -126,23 +126,34 @@ async function handleSubmit(event) {
 
   // ส่งข้อมูลจริงไปยัง Google Apps Script
   try {
-    const response = await fetch(GAS_PROMO_API_URL, {
+    await fetch(GAS_PROMO_API_URL, {
       method: "POST",
+      mode: "no-cors",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify(payload)
     });
 
-    const result = await response.json();
-
     btnSubmit.disabled = false;
     btnSubmit.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> บันทึกข้อมูลแจก Gift Card';
 
-    if (result.status === "success") {
-      showSuccessModal(customerName, branch, productValue);
-      loadRecentRecords();
-    } else {
-      throw new Error(result.message || "เกิดข้อผิดพลาดในการบันทึก");
-    }
+    // เพิ่มรายการใหม่ลงในแคชหน้าเว็บทันที
+    localRecords.unshift({
+      no: localRecords.length + 1,
+      branch: branch,
+      date: date,
+      name: customerName,
+      phone: customerPhone,
+      value: productValue,
+      notes: notes,
+      timestamp: new Date().toLocaleTimeString('th-TH')
+    });
+
+    showSuccessModal(customerName, branch, productValue);
+    renderRecordsList(localRecords);
+    updateCounts(localRecords);
+
+    // ดึงข้อมูลล่าสุดจาก Sheet อีกครั้งหลังบันทึก
+    setTimeout(loadRecentRecords, 2500);
 
   } catch (error) {
     console.error("Submission error:", error);
@@ -178,15 +189,18 @@ async function loadRecentRecords() {
     const response = await fetch(`${GAS_PROMO_API_URL}?action=getRecentRecords`);
     const result = await response.json();
 
-    if (result.status === "success") {
-      renderRecordsList(result.data || []);
-      updateCounts(result.data || []);
+    if (result.status === "success" && Array.isArray(result.data)) {
+      localRecords = result.data;
+      renderRecordsList(localRecords);
+      updateCounts(localRecords);
     } else {
-      listEl.innerHTML = `<div class="empty-state" style="color: #f87171">ไม่สามารถโหลดข้อมูลได้</div>`;
+      renderRecordsList(localRecords);
+      updateCounts(localRecords);
     }
   } catch (err) {
-    console.error("Fetch error:", err);
-    listEl.innerHTML = `<div class="empty-state">ยังไม่มีรายการล่าสุด หรือโหลดข้อมูลไม่สำเร็จ</div>`;
+    console.warn("Fetch error, using local state:", err);
+    renderRecordsList(localRecords);
+    updateCounts(localRecords);
   } finally {
     if (refreshIcon) refreshIcon.classList.remove("fa-spin");
   }
