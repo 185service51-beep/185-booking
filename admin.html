@@ -114,6 +114,43 @@
       border: 1px solid #d97706;
     }
 
+    .badge-arrived {
+      background-color: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid #059669;
+    }
+
+    .badge-pending {
+      background-color: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+
+    .btn-icon.btn-checkin {
+      color: #9ca3af;
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.04);
+      transition: all 0.2s;
+    }
+
+    .btn-icon.btn-checkin:hover {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border-color: #10b981;
+    }
+
+    .btn-icon.btn-checkin.active {
+      background: #059669;
+      color: #ffffff;
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    .booking-table tr.row-arrived {
+      background: rgba(16, 185, 129, 0.04);
+      border-left: 3px solid #10b981;
+    }
+
     /* Modal styles */
     .modal {
       display: none;
@@ -696,8 +733,9 @@
 
             <select id="statusFilter" class="filter-select" onchange="filterBookings()">
               <option value="">ทุกสถานะ</option>
-              <option value="ปกติ">ปกติ (ใช้งาน)</option>
-              <option value="ยกเลิก">ยกเลิก</option>
+              <option value="pending">⏳ รอรับบริการ</option>
+              <option value="arrived">✅ ลูกค้าเข้ามาแล้ว</option>
+              <option value="ยกเลิก">❌ ยกเลิก</option>
             </select>
 
             <select id="sortFilter" class="filter-select" onchange="filterBookings()">
@@ -937,8 +975,9 @@
         <div class="form-group" id="statusGroup">
           <label for="modalStatus">สถานะคิว</label>
           <select id="modalStatus" class="filter-select" style="width: 100%; height: 48px;">
-            <option value="ปกติ">ปกติ (ใช้งาน)</option>
-            <option value="ยกเลิก">ยกเลิกคิว (ลบออกจากปฏิทิน)</option>
+            <option value="ปกติ">⏳ รอรับบริการ (ปกติ)</option>
+            <option value="ลูกค้าเข้ามาแล้ว">✅ ลูกค้าเข้ามาแล้ว</option>
+            <option value="ยกเลิก">❌ ยกเลิกคิว (ลบออกจากปฏิทิน)</option>
           </select>
         </div>
 

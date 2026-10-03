@@ -107,19 +107,35 @@ function renderBookingsTable(data) {
     const tr = document.createElement("tr");
     
     // ตั้งรูปแบบสถานะ Badge
-    let badgeClass = "badge-success";
-    let statusText = "ปกติ";
-    if (item.status === "ยกเลิก" || item.status === "ยกเลิกคิว" || item.status.includes("ยกเลิก")) {
-      badgeClass = "badge-danger";
-      statusText = "ยกเลิกแล้ว";
+    const isArrived = item.status === "ลูกค้าเข้ามาแล้ว" || item.status.includes("เข้ามาแล้ว");
+    const isCancelled = item.status === "ยกเลิก" || item.status === "ยกเลิกคิว" || item.status.includes("ยกเลิก");
+
+    let badgeHtml = '<span class="badge badge-pending"><i class="fa-solid fa-clock"></i> รอรับบริการ</span>';
+    let checkIcon = '';
+
+    if (isCancelled) {
+      badgeHtml = '<span class="badge badge-danger"><i class="fa-solid fa-circle-xmark"></i> ยกเลิกแล้ว</span>';
+    } else if (isArrived) {
+      badgeHtml = '<span class="badge badge-arrived"><i class="fa-solid fa-circle-check"></i> เข้ามาแล้ว</span>';
+      checkIcon = '<span style="color: #10b981; font-weight: 700; margin-right: 4px;" title="ลูกค้าเข้ามาถึงร้านแล้ว">✅</span>';
+      tr.classList.add("row-arrived");
     }
 
     const isToday = item.date === todayStr;
     const todayBadge = isToday ? `<span style="background: rgba(6,185,80,0.2); color: #4ade80; border: 1px solid rgba(6,185,80,0.4); font-size: 0.72rem; padding: 2px 6px; border-radius: 4px; font-weight: 600; margin-left: 6px;">🔥 วันนี้</span>` : '';
 
+    let checkinBtnHtml = '';
+    if (!isCancelled) {
+      if (isArrived) {
+        checkinBtnHtml = `<button class="btn-icon btn-checkin active" onclick="toggleCheckIn('${item.bookingId}', false)" title="ลูกค้าเข้ามาแล้ว (คลิกเพื่อยกเลิกสถานะ)"><i class="fa-solid fa-circle-check"></i></button>`;
+      } else {
+        checkinBtnHtml = `<button class="btn-icon btn-checkin" onclick="toggleCheckIn('${item.bookingId}', true)" title="คลิกเมื่อลูกค้าเข้ามาถึงร้านแล้ว"><i class="fa-regular fa-circle-check"></i></button>`;
+      }
+    }
+
     tr.innerHTML = `
       <td data-label="วัน/เวลานัด">
-        <strong style="color: var(--accent-color);">${formatThaiDate(item.date)}</strong>${todayBadge}<br>
+        ${checkIcon}<strong style="color: var(--accent-color);">${formatThaiDate(item.date)}</strong>${todayBadge}<br>
         <small><i class="fa-regular fa-clock"></i> ${item.time} น.</small>
       </td>
       <td data-label="สาขา"><strong>${item.branch}</strong></td>
@@ -132,15 +148,60 @@ function renderBookingsTable(data) {
         <small>${item.carModel}</small>
       </td>
       <td data-label="รายละเอียด"><p style="max-width: 250px; font-size: 0.85rem; color: var(--text-light); word-wrap: break-word;">${item.serviceDetails || '-'}</p></td>
-      <td data-label="สถานะ"><span class="badge ${badgeClass}">${statusText}</span></td>
+      <td data-label="สถานะ">${badgeHtml}</td>
       <td data-label="จัดการ">
         <div class="action-btn-group">
+          ${checkinBtnHtml}
           <button class="btn-icon btn-edit" onclick="openEditModal('${item.bookingId}')" title="แก้ไขคิว"><i class="fa-solid fa-pen-to-square"></i></button>
         </div>
       </td>
     `;
     tableBody.appendChild(tr);
   });
+}
+
+// ฟังก์ชันเช็คอินด่วน 1-Click (ลูกค้าเข้ามาถึงร้านแล้ว)
+async function toggleCheckIn(bookingId, isArrived) {
+  const booking = bookingsList.find(item => item.bookingId === bookingId);
+  if (!booking) return;
+
+  const newStatus = isArrived ? "ลูกค้าเข้ามาแล้ว" : "ปกติ";
+  const oldStatus = booking.status;
+  
+  // อัปเดตในหน่วยความจำทันที (Optimistic UI Update)
+  booking.status = newStatus;
+  filterBookings();
+  if (calendarInstance) updateCalendarEvents();
+
+  const payload = {
+    action: "updateBooking",
+    bookingId: booking.bookingId,
+    branch: booking.branch,
+    date: booking.date,
+    time: booking.time,
+    customerName: booking.customerName,
+    customerPhone: booking.customerPhone,
+    carLicense: booking.carLicense,
+    carModel: booking.carModel,
+    serviceDetails: booking.serviceDetails,
+    status: newStatus
+  };
+
+  try {
+    await fetch(GAS_API_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+  } catch (err) {
+    console.error("Check-in update error:", err);
+    // คืนค่าเดิมกรณีส่งไม่สำเร็จ
+    booking.status = oldStatus;
+    filterBookings();
+    if (calendarInstance) updateCalendarEvents();
+    alert("เกิดข้อผิดพลาดในการอัปเดตสถานะ กรุณาลองใหม่อีกครั้ง");
+  }
 }
 
 // ค้นหาและกรองข้อมูลคิวฝั่ง Client-side
@@ -176,7 +237,11 @@ function filterBookings() {
     const matchBranch = selectedBranch === "" || item.branch === selectedBranch;
     
     let matchStatus = true;
-    if (selectedStatus === "ปกติ") {
+    if (selectedStatus === "arrived") {
+      matchStatus = item.status.includes("เข้ามาแล้ว");
+    } else if (selectedStatus === "pending") {
+      matchStatus = !item.status.includes("ยกเลิก") && !item.status.includes("เข้ามาแล้ว");
+    } else if (selectedStatus === "ปกติ") {
       matchStatus = !item.status.includes("ยกเลิก");
     } else if (selectedStatus === "ยกเลิก") {
       matchStatus = item.status.includes("ยกเลิก");
@@ -231,7 +296,13 @@ function openEditModal(bookingId) {
   
   // แสดงตัวเลือกเปลี่ยนสถานะ
   document.getElementById("statusGroup").classList.remove("hidden");
-  document.getElementById("modalStatus").value = booking.status.includes("ยกเลิก") ? "ยกเลิก" : "ปกติ";
+  if (booking.status.includes("ยกเลิก")) {
+    document.getElementById("modalStatus").value = "ยกเลิก";
+  } else if (booking.status.includes("เข้ามาแล้ว")) {
+    document.getElementById("modalStatus").value = "ลูกค้าเข้ามาแล้ว";
+  } else {
+    document.getElementById("modalStatus").value = "ปกติ";
+  }
 
   document.getElementById("bookingModal").classList.add("active");
 }
@@ -449,13 +520,16 @@ function bookingsToEvents(data) {
       const start = new Date(dateTime);
       const end = new Date(start.getTime() + 60 * 60 * 1000);
 
+      const isArrived = item.status && item.status.includes('เข้ามาแล้ว');
+      const checkPrefix = isArrived ? '✅ ' : '';
+
       return {
         id: item.bookingId,
-        title: `${item.time} | ${item.branch} | ${item.customerName}`,
+        title: `${checkPrefix}${item.time} | ${item.branch} | ${item.customerName}`,
         start: start.toISOString(),
         end: end.toISOString(),
         backgroundColor: color.background,
-        borderColor: color.border,
+        borderColor: isArrived ? '#10b981' : color.border,
         textColor: '#ffffff',
         extendedProps: { booking: item }
       };
