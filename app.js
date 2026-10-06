@@ -73,7 +73,12 @@ function generateDateRoller() {
     
     const card = document.createElement('div');
     card.className = 'date-card';
-    if (i === 0) card.classList.add('today');
+    if (i === 0) {
+      card.classList.add('today', 'selected');
+      selectedDateStr = dateStr;
+      const bookingDateInput = document.getElementById("bookingDate");
+      if (bookingDateInput) bookingDateInput.value = dateStr;
+    }
     if (isTuesdayPromo) card.classList.add('promo-date');
     
     card.innerHTML = `
@@ -98,6 +103,11 @@ function generateDateRoller() {
     
     roller.appendChild(card);
   }
+
+  // เรียกโหลดคิวและเปิดไฟสถานะสาขาเริ่มต้นสำหรับวันนี้
+  if (selectedDateStr) {
+    checkAvailableSlots();
+  }
 }
 
 
@@ -119,7 +129,9 @@ async function checkAvailableSlots() {
     setTimeout(() => {
       // จำลองข้อมูลคิวว่างกรณีที่ยังไม่ได้เอา URL GAS มาใส่
       const mockQueues = { "08:30": 2, "09:00": 0, "09:30": 0, "10:00": 1, "10:30": 1, "11:00": 0, "11:30": 3, "12:00": 0, "12:30": 0, "13:00": 0, "13:30": 1, "14:00": 0 };
+      const mockBranchSummary = { "สาย 3": 2, "บางแค": 6, "นนทบุรี": 1, "หนองแขม": 0 };
       renderTimeSlots(mockQueues);
+      updateBranchGlowEffects(mockBranchSummary);
     }, 800);
     return;
   }
@@ -132,6 +144,9 @@ async function checkAvailableSlots() {
     const result = await response.json();
     if (result.status === "success") {
       renderTimeSlots(result.data);
+      if (result.branchSummary) {
+        updateBranchGlowEffects(result.branchSummary);
+      }
     } else {
       throw new Error(result.message || "Unknown error");
     }
@@ -140,6 +155,40 @@ async function checkAvailableSlots() {
     loadingEl.classList.add("hidden");
     errorEl.classList.remove("hidden");
   }
+}
+
+// ฟังก์ชันอัปเดตแสงเรืองรอบกรอบสาขาที่มีคิวว่าง (Dynamic Glowing Availability)
+function updateBranchGlowEffects(branchSummary) {
+  const branches = ["สาย 3", "บางแค", "นนทบุรี", "หนองแขม"];
+  
+  branches.forEach(branchName => {
+    const card = document.querySelector(`.branch-card[data-branch="${branchName}"]`) ||
+                 document.querySelector(`input[name="branch"][value="${branchName}"]`)?.closest('.branch-card');
+    if (!card) return;
+
+    const badgeContainer = card.querySelector('.branch-badge-container');
+    const bookedCount = (branchSummary && branchSummary[branchName] !== undefined) ? Number(branchSummary[branchName]) : 0;
+
+    // ถ้าคิวยังว่างเยอะ (จองไปไม่เกิน 3 คิวจาก 12 รอบ) -> เปิดไฟนีออนเรืองแสง + ติดป้ายคิวว่างช่างพร้อม
+    if (bookedCount <= 3) {
+      card.classList.add("branch-glow");
+      if (badgeContainer) {
+        badgeContainer.innerHTML = `<span class="promo-badge"><i class="fa-solid fa-bolt"></i> คิวว่างช่างพร้อม</span>`;
+      }
+    } else if (bookedCount >= 10) {
+      // คิวใกล้เต็มหรือเต็มแล้ว
+      card.classList.remove("branch-glow");
+      if (badgeContainer) {
+        badgeContainer.innerHTML = `<span class="promo-badge" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white;"><i class="fa-solid fa-fire"></i> คิวแน่น</span>`;
+      }
+    } else {
+      // คิวปานกลาง
+      card.classList.remove("branch-glow");
+      if (badgeContainer) {
+        badgeContainer.innerHTML = "";
+      }
+    }
+  });
 }
 
 // เรนเดอร์การเลือกช่วงเวลาลงบนหน้าเว็บ
